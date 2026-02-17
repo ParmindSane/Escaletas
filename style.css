@@ -1,0 +1,100 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+}
+
+/* ----------------------------------------------------------------------------CLASES SECUNDARIAS */
+.oculto {
+  display: none;
+}
+
+/* ----------------------------------------------------------------------------OBJETOS REPETIDOS */
+
+/* ---------------------------------------------------------------MENÚ CONTEXTUAL */
+#contextMenu {
+  z-index: 10;
+
+  min-width: 100px;
+  min-height: 50px;
+
+  position: fixed;
+
+  background-color: rgba(255, 255, 255, 0.75);
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#contextMenu.oculto {
+  background: none;
+}
+
+/* Secciones */
+#contextMenu div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Botones */
+.menuOption {
+  width: 150px;
+  height: 50px;
+  margin-bottom: -2px;
+
+  background-color: white;
+
+  user-select: none;
+}
+.menuOption:hover {
+  background-color: hsl(0, 0%, 90%);
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------EVENTO */
+.evento * {
+  background-color: rgb(0, 255, 0);
+  border: 2px solid rgb(0, 255, 0);
+}
+
+/* Nodo principal */
+.eventoMain {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+
+  border: 2px solid blue;
+}
+
+/* Secciones del nodo principal */
+.eventoMain * {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.perfil {
+  width: 70px;
+  height: 100px;
+
+  border: 2px solid orange;
+}
+
+.resumen,
+.title {
+  width: 210px;
+}
+
+.resumen {
+  min-height: 100px;
+
+  border: 2px solid brown;
+}
+
+.title {
+  min-height: 50px;
+
+  background-color: lightgray;
+  border: 2px solid burlywood;
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Pragma" content="no-cache" />
+
+    <title>Escaletas</title>
+    <!-- <link rel="icon" type="image/x-icon" href="/assets/icon.png" /> -->
+
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+
+    <script src="./libraries/p5.min.js"></script>
+    <script src="./libraries/p5.sound.min.js"></script>
+  </head>
+
+  <body>
+    <div id="body" class="noContext" style="width: 100vw; height: 100vh">
+      <!-- ----------------------------------------------------------------------------INTERFAZ -->
+      <!-- <header
+        id="interfaz"
+        style="
+          width: 100vw;
+          height: 100px;
+
+          background-color: white;
+        "
+      >
+        <p>Interfaz</p>
+      </header> -->
+
+      <!-- ----------------------------------------------------------------------------CANVAS -->
+      <section
+        id="canvas"
+        class="dragArea context"
+        style="height: 100%; overflow: auto; position: relative"
+      ></section>
+
+      <!-- ----------------------------------------------------------------------------CONTEXT MENU -->
+      <div
+        id="contextMenu"
+        class="oculto noContext"
+      ></div>
+    </div>
+
+    <!-- ----------------------------------------------------------------------------SCRIPTS -->
+    <!-- p5 Canvas -->
+    <script>
+      const script = document.createElement("script");
+      script.src = "./js/sketch.js?v=" + Date.now(); // agrega timestamp único
+      document.body.appendChild(script);
+    </script>
+
+    <!-- Menú contextual personalizado -->
+    <script src="./js/contextMenu.js"></script>
+
+    <!-- Componentes -->
+    <script src="./js/componentes.js"></script>
+
+    <!-- Drag scroll -->
+    <script src="./js/scrollArea.js"></script>
+
+    <!-- Eventos -->
+    <script src="./js/event.js"></script>
+
+    <!-- Personajes -->
+    <script src="./js/personajes.js"></script>
+  </body>
+</html>
