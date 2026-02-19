@@ -7,25 +7,21 @@ class Hueso {
 
     this.padre = _padre;
 
-    // console.log(this);
-    // // Si se le pide un id en vez de una clase
-    // if (_clases.includes("#")) {
-    //   console.log("incluye id");
-    //   this.element = select(_clases);
-    //   this.clases = this.element.class();
-    // } else {
-    //   console.log("NO incluye id");
-    
-    // Crearlo como p5.Element mantiene su posición relativa al scrollear el canvas
-    // Se accede al div posta con .elt
-    this.element = createDiv();
+    // Si se le pide un id en vez de una clase, busca un elemento que ya exista en el HTML
+    if (_clases.includes("#")) {
+      this.element = select(_clases);
+      this.clases = this.element.class();
+    } else {
+      // Crearlo como p5.Element facilita algunas funciones en relación al Canvas
+      // Se accede al div posta con .elt
+      this.element = createDiv();
 
-    // Vincular con el resto del HTML
-    this.element.parent(this.padre.element);
+      // Vincular con el resto del HTML
+      this.element.parent(this.padre.element);
 
-    this.clases = _clases.split(" ");
-    this.element.addClass(this.clases.join(" "));
-    // }
+      this.clases = _clases.split(" ");
+      this.element.addClass(this.clases.join(" "));
+    }
 
     this.element.elt.hueso = this;
 
@@ -40,7 +36,7 @@ class Hueso {
   }
 
   // ---------------------------------------------------------------CREAR NUEVA OPCIÓN DE MENÚ CONTEXTUAL
-  newContextoOption(_evento, _texto, _method) {
+  newContextOption(_evento, _texto, _method) {
     this.contextOptions.push(new ContextOption(this, _evento, _texto));
     this.element.elt.addEventListener(_evento, _method.bind(this));
   }
@@ -59,13 +55,21 @@ class HuesoFlotante extends Hueso {
     ellipse(this.posX, this.posY, 10);
     pop();
 
-    this.element.elt.style.position = "fixed";
+    // this.element.elt.style.position = "fixed";
     this.element.position(this.posX, this.posY);
+  }
+
+  // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HUESO
+  mover(_mx, _my) {
+    this.actualizarPosTam(_mx, _my, 0, 0);
+
+    this.posX += _mx;
+    this.posY += _my;
   }
 
   // ---------------------------------------------------------------CAMBIAR TAMAÑO DEL HTML
   actualizarPosTam(_cambiarPX, _cambiarPY, _cambiarTX, _cambiarTY) {
-    // Guardar datos anteriores
+    // Guardar datos anteriores de tamaño
     let pPosX = this.element.position().x;
     let pPosY = this.element.position().y;
     let pTamX = this.tamX;
@@ -89,11 +93,6 @@ class HuesoFlotante extends Hueso {
     if (_cambiarTY) {
       cambioY = _cambiarTY;
     }
-
-    push();
-    fill(360);
-    ellipse(this.posX, this.posY, 10);
-    pop();
 
     // Reubicar en función del nuevo tamaño
     this.element.position(

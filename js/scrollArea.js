@@ -1,11 +1,8 @@
 // ----------------------------------------------------------------------------CONTENEDOR DEL CANVAS
-class HuesoCanvas {
+class HuesoCanvas extends Hueso{
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
-    // super("#canvas");
-
-    this.element = select("#canvas");
-    this.element.elt.hueso = this;
+    super("#canvas");
 
     // Información para controlar el dragscroll
     this.dragscrollData = { top: 0, left: 0, x: 0, y: 0 };
@@ -13,38 +10,41 @@ class HuesoCanvas {
     this.dragscrolling = false;
     this.dragscrolled = false;
 
-    // Asignar eventos de mouse
-    document.addEventListener("mousemove", this.mouseMoveHandler.bind(this));
-    document.addEventListener("mouseup", this.mouseUpHandler.bind(this));
-    document.addEventListener("mousedown", (e) => {
-      // Sólo reacciona al click derecho
-      if (e.button === 2) {
-        this.dragscrollStarted = true;
-        this.element.elt.dispatchEvent(
-          new CustomEvent("dragscrollStart", {
-            bubbles: true, // Allows the event to bubble up the DOM
-            cancelable: true, // Allows the event's default action to be prevented
-          }),
-        );
-
-        this.dragscrollData = {
-          // The current scroll
-          left: this.element.elt.scrollLeft,
-          top: this.element.elt.scrollTop,
-          // Get the current mouse position
-          x: e.clientX,
-          y: e.clientY,
-        };
-      }
-    });
+    // Eventos del mouse para el dragscroll
+    this.element.mousePressed(this.mouseDownHandler.bind(this));
+    this.element.mouseMoved(this.mouseMoveHandler.bind(this));
+    this.element.mouseReleased(this.mouseUpHandler.bind(this));
 
     // Opciones para el menú contextual
-    this.contextOptions = [];
-    this.contextOptions.push(new ContextOption(this, "crearEvento", "Nuevo evento"));
+    this.contextOptions.push(
+      new ContextOption(this, "crearEvento", "Nuevo evento"),
+    );
   }
 
+  // ---------------------------------------------------------------MOUSE PULSADO
+  mouseDownHandler(_e) {
+    // Sólo reacciona al click derecho
+    if (_e.button === 2) {
+      this.dragscrollStarted = true;
+      this.element.elt.dispatchEvent(
+        new CustomEvent("dragscrollStart", {
+          bubbles: true, // Allows the event to bubble up the DOM
+          cancelable: true, // Allows the event's default action to be prevented
+        }),
+      );
+
+      this.dragscrollData = {
+        // The current scroll
+        left: this.element.elt.scrollLeft,
+        top: this.element.elt.scrollTop,
+        // Get the current mouse position
+        x: _e.clientX,
+        y: _e.clientY,
+      };
+    }
+  }
   // ---------------------------------------------------------------MOUSE EN MOVIMIENTO
-  mouseMoveHandler(e) {
+  mouseMoveHandler(_e) {
     // Sólo se ejecuta si el mouse se presionó sobre el área
     if (this.dragscrollStarted) {
       this.dragscrolling = true;
@@ -55,15 +55,14 @@ class HuesoCanvas {
       this.element.elt.style.userSelect = "none";
 
       // How far the mouse has been moved
-      const dx = e.clientX - this.dragscrollData.x;
-      const dy = e.clientY - this.dragscrollData.y;
+      const dx = _e.clientX - this.dragscrollData.x;
+      const dy = _e.clientY - this.dragscrollData.y;
 
       // Scroll the element
       this.element.elt.scrollTop = this.dragscrollData.top - dy;
       this.element.elt.scrollLeft = this.dragscrollData.left - dx;
     }
   }
-
   // ---------------------------------------------------------------MOUSE SOLTADO
   mouseUpHandler() {
     if (this.dragscrollStarted) {

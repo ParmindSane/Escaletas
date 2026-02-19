@@ -1,8 +1,8 @@
 // ----------------------------------------------------------------------------CLASE MENÚ CONTEXTUAL
-class ContextMenu {
+class ContextMenu extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
-    this.element = select("#contextMenu");
+    super(0, 0, "#contextMenu");
 
     this.context = [];
     this.buttons = [];
@@ -11,9 +11,10 @@ class ContextMenu {
     //Invocar este menú contextual en vez del default
     document.addEventListener("contextmenu", this.summon.bind(this));
 
-    //cerrar menú con el siguiente click o dragscroll tras su invocación
+    //cerrar menú con el siguiente click tras su invocación
     document.addEventListener("click", this.ocultar.bind(this));
 
+    // cerrar menú con el siguiente dragscroll tras su invocación
     this.dragscrolled = false;
     document.addEventListener(
       "dragscrollStart",
@@ -36,19 +37,20 @@ class ContextMenu {
   }
 
   // ---------------------------------------------------------------INVOCAR
-  summon(e) {
+  summon(_e) {
     if (!DEBUG) {
-      e.preventDefault(); // Prevents the default right-click menu
+      _e.preventDefault(); // Prevents the default right-click menu
     }
 
     if (!this.dragscrolled) {
-      this.vaciar();
+      // Lo esconde y borra lo anterior antes de invocar uno nuevo
+      this.ocultar();
 
       // Confirma que el objeto es un contexto válido y lo guarda en la lista
       // Sube por su árbol genealógico buscando más contextos
       // Deja de buscar cuando llega a un objeto sin padre o marcado como sin contexto.
       let isNoContext = false;
-      for (let i = e.target; !isNoContext; i = i.parentElement) {
+      for (let i = _e.target; !isNoContext; i = i.parentElement) {
         isNoContext = i.classList.contains("noContext") || !i.parentElement;
 
         if (i.hueso) {
@@ -61,13 +63,9 @@ class ContextMenu {
       }
       console.log(this.context);
 
-      // Si se encontró al menos una opción válida, invoca un nuevo menú
+      // Si encontró al menos una opción válida, invoca un nuevo menú
       if (this.context.length > 0) {
         this.invocado = true;
-
-        // Mostrar el menú en el lugar correcto
-        this.element.position(e.clientX, e.clientY); // ¿CÓMO EVITAR QUE SE SALGA DE LA PANTALLA?
-        this.element.removeClass("oculto");
 
         // Crea una sección de menú por cada contexto en la familia
         for (let c of this.context) {
@@ -84,6 +82,35 @@ class ContextMenu {
             this.buttons.push(butt);
           }
         }
+
+        // Mostrar el menú
+        this.element.removeClass("oculto");
+        this.mover(0, 0);
+
+        // Evitar que se salga de la pantalla por la derecha
+        // Por la izquierda no hace falta porque siempre se dibuja a la derecha del cursor
+        let cx = _e.clientX + this.tamX / 2 + 2;
+        let margin = this.tamX * 0.6;
+        let dist = windowWidth - cx;
+        if (dist < margin) {
+          cx -= margin - dist;
+        }
+        // Y en vertical
+        let cy = _e.clientY;
+        margin = this.tamY * 0.6;
+        dist = windowHeight - cy;
+        if (dist < margin) {
+          cy -= margin - dist;
+        } else if (cy < margin) {
+          cy += margin - cy;
+        }
+
+        // Acomodar posición
+        this.mover(cx, cy);
+      } else {
+        // Si no hay opciones válidas, se vuelve a esconder por las dudas
+        // Se queda bug si intentás invocarlo sobre sí mismo ah
+        this.ocultar();
       }
     }
   }
@@ -92,16 +119,16 @@ class ContextMenu {
   ocultar() {
     if (this.invocado) {
       this.invocado = false;
-      this.vaciar();
+
+      // Vaciar
+      this.context = [];
+      this.buttons = [];
+      this.element.html(" ");
+
+      // Esconder
+      this.mover(-this.posX, -this.posY);
       this.element.addClass("oculto");
     }
-  }
-
-  // ---------------------------------------------------------------VACIAR
-  vaciar() {
-    this.context = [];
-    this.buttons = [];
-    this.element.html(" ");
   }
 }
 
