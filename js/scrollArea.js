@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------CONTENEDOR DEL CANVAS
-class HuesoCanvas extends Hueso{
+class HuesoCanvas extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
     super("#canvas");
@@ -16,9 +16,7 @@ class HuesoCanvas extends Hueso{
     this.element.mouseReleased(this.mouseUpHandler.bind(this));
 
     // Opciones para el menú contextual
-    this.contextOptions.push(
-      new ContextOption(this, "crearEvento", "Nuevo evento"),
-    );
+    this.newContextOption("crearEvento", "Nuevo evento");
   }
 
   // ---------------------------------------------------------------MOUSE PULSADO

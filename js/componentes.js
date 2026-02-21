@@ -23,6 +23,7 @@ class Hueso {
       this.element.addClass(this.clases.join(" "));
     }
 
+    // Referencia al Hueso en el Elemento
     this.element.elt.hueso = this;
 
     // Guardar tamaño asignado por CSS a la clase. Si no tiene, es 0
@@ -38,7 +39,11 @@ class Hueso {
   // ---------------------------------------------------------------CREAR NUEVA OPCIÓN DE MENÚ CONTEXTUAL
   newContextOption(_evento, _texto, _method) {
     this.contextOptions.push(new ContextOption(this, _evento, _texto));
-    this.element.elt.addEventListener(_evento, _method.bind(this));
+
+    // Si se especificó un método, se añade un EventListener local que lo ejecute
+    if (_method) {
+      this.element.elt.addEventListener(_evento, _method.bind(this));
+    }
   }
 }
 
