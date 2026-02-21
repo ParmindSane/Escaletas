@@ -55,13 +55,7 @@ class Evento extends HuesoFlotante {
       "Evento ah",
       this.contextTest1.bind(this),
     );
-    for (let i = 0; i < 1; i++) {
-      this.newContextOption(
-        "EventoEvento_" + i,
-        "a " + i,
-        this.contextTest2.bind(this),
-      );
-    }
+    this.newContextOption("borrarEvento", "Borrar evento");
   }
 
   // ---------------------------------------------------------------EVENTOS PARA DRAGGEAR
@@ -108,18 +102,30 @@ class Evento extends HuesoFlotante {
   contextTest1(_e) {
     console.log("Evento evento en " + this.posX);
   }
-
-  // ---------------------------------------------------------------CREAR UN NODO DE PERSONAJE
-  contextTest2() {
-    console.log("OTRO evento evento en " + this.posX);
+  borrar(_e) {
+    console.log(_e);
   }
 }
 
 // ----------------------------------------------------------------------------CREAR EVENTO NUEVO
 let eventos = [];
-
-document.addEventListener("crearEvento", function (e) {
+document.addEventListener("crearEvento", function (_e) {
   eventos.push(new Evento(round(mouseX), round(mouseY), "evento", huesoCanvas));
+
+  console.log(eventos);
+});
+
+// ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
+document.addEventListener("borrarEvento", function (_e) {
+  let h = _e.target.hueso;
+
+  // Eliminar el Hueso del array
+  let i = eventos.indexOf(h);
+  eventos.splice(i, 1);
+
+  // Borrar el Hueso y su HTML
+  h.element.elt.hueso = undefined;
+  h.element.remove();
 });
 
 // // ----------------------------------------------------------------------------CLASE PERSONAJE EN EVENTO
