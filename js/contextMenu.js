@@ -11,10 +11,12 @@ class ContextMenu extends HuesoFlotante {
     //Invocar este menú contextual en vez del default
     document.addEventListener("contextmenu", this.summon.bind(this));
 
-    //cerrar menú con el siguiente click tras su invocación
+    //cerrar menú con la siguiente acción del mouse
+    document.addEventListener("mousedown", this.mouseSensor.bind(this));
+    document.addEventListener("wheel", this.mouseSensor.bind(this));
     document.addEventListener("click", this.ocultar.bind(this));
 
-    // cerrar menú con el siguiente dragscroll tras su invocación
+    // evita que se invoque el menú al hacer dragscroll
     this.dragscrolled = false;
     document.addEventListener(
       "dragscrollStart",
@@ -28,6 +30,8 @@ class ContextMenu extends HuesoFlotante {
 
   // ---------------------------------------------------------------SENSOR DE DRAGSCROLL
   dragscrollSensor(_b) {
+    // Impide que se invoque si se acaba de dragscrollear
+    // (Ambas cosas son con el click derecho y se confunde el pobre)
     this.dragscrolled = _b;
 
     // Esconde el menú al dragscrollear
@@ -88,7 +92,7 @@ class ContextMenu extends HuesoFlotante {
         this.mover(0, 0);
 
         // Evitar que se salga de la pantalla por la derecha
-        // Por la izquierda no hace falta porque siempre se dibuja a la derecha del cursor
+        // (por la izquierda no hace falta porque siempre se dibuja a la derecha del cursor)
         let cx = _e.clientX + this.tamX / 2 + 2;
         let margin = this.tamX * 0.6;
         let dist = windowWidth - cx;
@@ -128,6 +132,17 @@ class ContextMenu extends HuesoFlotante {
       // Esconder
       this.mover(-this.posX, -this.posY);
       this.element.addClass("oculto");
+    }
+  }
+
+  // ---------------------------------------------------------------OCULTAR POR CLICK EXTERNO
+  mouseSensor(_e) {
+    // Oculta el menú si se usa el mouse fuera de él mientras está invocado
+    if (this.invocado) {
+      let t = _e.target;
+      if (!(this.element.elt.contains(t) || this.element.elt === t)) {
+        this.ocultar();
+      }
     }
   }
 }
