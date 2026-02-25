@@ -2,7 +2,7 @@
 class HuesoCanvas extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
-    super("#canvas");
+    super(select("#canvas"));
 
     // Información para controlar el dragscroll
     this.dragscrollData = { top: 0, left: 0, x: 0, y: 0 };
@@ -49,7 +49,7 @@ class HuesoCanvas extends Hueso {
       this.dragscrolled = true;
 
       // Change the cursor and prevent user from selecting the text
-      this.element.elt.style.cursor = "grabbing";
+      this.element.elt.style.cursor = "all-scroll";
       this.element.elt.style.userSelect = "none";
 
       // How far the mouse has been moved

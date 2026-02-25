@@ -2,7 +2,7 @@
 class ContextMenu extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
-    super(0, 0, "#contextMenu");
+    super(select("#contextMenu"));
 
     this.context = [];
     this.buttons = [];
@@ -26,6 +26,9 @@ class ContextMenu extends HuesoFlotante {
       "dragscrollEnd",
       this.dragscrollSensor.bind(this, false),
     );
+
+    // Lo esconde recién ahora para que pueda tomar los datos del estilo
+    this.ocultar();
   }
 
   // ---------------------------------------------------------------SENSOR DE DRAGSCROLL
@@ -89,28 +92,29 @@ class ContextMenu extends HuesoFlotante {
 
         // Mostrar el menú
         this.element.removeClass("oculto");
-        this.mover(0, 0);
+        this.moverA(0, 0);
+        this.actualizarTam();
 
         // Evitar que se salga de la pantalla por la derecha
         // (por la izquierda no hace falta porque siempre se dibuja a la derecha del cursor)
-        let cx = _e.clientX + this.tamX / 2 + 2;
-        let margin = this.tamX * 0.6;
+        let cx = _e.clientX + 4;
+        let margin = this.tamX + 16;
         let dist = windowWidth - cx;
         if (dist < margin) {
           cx -= margin - dist;
         }
-        // Y en vertical
+        // Y por arriba o abajo
         let cy = _e.clientY;
-        margin = this.tamY * 0.6;
+        margin = this.tamY + 16;
         dist = windowHeight - cy;
         if (dist < margin) {
-          cy -= margin - dist;
+          cy -= (margin - dist);
         } else if (cy < margin) {
-          cy += margin - cy;
+          cy += (margin - cy);
         }
 
         // Acomodar posición
-        this.mover(cx, cy);
+        this.moverA(cx, cy);
       } else {
         // Si no hay opciones válidas, se vuelve a esconder por las dudas
         // Se queda bug si intentás invocarlo sobre sí mismo ah
@@ -121,26 +125,22 @@ class ContextMenu extends HuesoFlotante {
 
   // ---------------------------------------------------------------OCULTAR
   ocultar() {
-    if (this.invocado) {
-      this.invocado = false;
+    this.invocado = false;
 
-      // Vaciar
-      this.context = [];
-      this.buttons = [];
-      this.element.html(" ");
+    // Vaciar
+    this.context = [];
+    this.buttons = [];
+    this.element.html(" ");
 
-      // Esconder
-      this.mover(-this.posX, -this.posY);
-      this.element.addClass("oculto");
-    }
+    // Esconder
+    this.element.addClass("oculto");
   }
 
   // ---------------------------------------------------------------OCULTAR POR CLICK EXTERNO
   mouseSensor(_e) {
     // Oculta el menú si se usa el mouse fuera de él mientras está invocado
     if (this.invocado) {
-      let t = _e.target;
-      if (!(this.element.elt.contains(t) || this.element.elt === t)) {
+      if (!this.contieneTarget(_e)) {
         this.ocultar();
       }
     }

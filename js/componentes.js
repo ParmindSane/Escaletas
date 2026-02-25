@@ -1,38 +1,31 @@
 // ----------------------------------------------------------------------------CLASE P5 -> HTML
 class Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_clases, _padre) {
-    this.tamX = 0;
-    this.tamY = 0;
-
+  constructor(_element, _clases, _padre) {
+    // Crearlo como p5.Element facilita algunas funciones en relación al Canvas
+    // (se accede al elemento posta con .elt)
+    this.element = _element;
     this.padre = _padre;
 
-    // Si se le pide un id en vez de una clase, busca un elemento que ya exista en el HTML
-    if (_clases.includes("#")) {
-      this.element = select(_clases);
-      this.clases = this.element.class();
-    } else {
-      // Crearlo como p5.Element facilita algunas funciones en relación al Canvas
-      // Se accede al div posta con .elt
-      this.element = createDiv();
-
-      // Vincular con el resto del HTML
+    // Si crea un elemento nuevo, le aplica los otros parámetros
+    if (_clases && _padre) {
       this.element.parent(this.padre.element);
-
-      this.clases = _clases.split(" ");
-      this.element.addClass(this.clases.join(" "));
+      this.element.addClass(_clases);
+    } else {
+      // Si usa un elemento que ya existe, toma sus datos
+      if (this.element.parent().hueso) {
+        this.padre = this.element.parent().hueso;
+      }
     }
 
     // Referencia al Hueso en el Elemento
+    // (para cuando se lo accede desde un evento)
     this.element.elt.hueso = this;
 
-    // Guardar tamaño asignado por CSS a la clase. Si no tiene, es 0
-    if (this.element.size().height !== 0) {
-      this.tamX = this.element.size().width;
-      this.tamY = this.element.size().height;
-    }
+    // Guardar tamaño asignado por CSS a la clase. Por defecto es 0
+    this.actualizarTam();
 
-    // Deja preparado un array para las opciones de menú contextual
+    // Dejar preparado un array para las opciones de menú contextual
     this.contextOptions = [];
   }
 
@@ -45,64 +38,95 @@ class Hueso {
       this.element.elt.addEventListener(_evento, _method.bind(this));
     }
   }
+
+  // ---------------------------------------------------------------DETECTAR SI EL EVENTO SE DISPARÓ DENTRO DEL OBJETO
+  contieneTarget(_e) {
+    let t = _e.target;
+    return this.element.elt.contains(t) || this.element.elt === t;
+  }
+
+  // ---------------------------------------------------------------ACTUALIZAR TAMAÑO DEL ELEMENTO
+  actualizarTam() {
+    // Guardar acceso rápido al tamaño actual del elemento
+    this.tamX = this.element.size().width;
+    this.tamY = this.element.size().height;
+
+    return { x: this.tamX, y: this.tamY };
+  }
 }
 
 // ----------------------------------------------------------------------------CLASE P5 -> HTML CON POSICIÓN DEFINIDA
 class HuesoFlotante extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_x, _y, _clase, _padre) {
-    super(_clase, _padre);
+  constructor(_element, _clase, _padre) {
+    super(_element, _clase, _padre);
 
-    this.posX = _x;
-    this.posY = _y;
+    this.posX = 0;
+    this.posY = 0;
 
-    push();
-    ellipse(this.posX, this.posY, 10);
-    pop();
+    // Si el padre está desfasado, le resta su desfase
+    // para tomar de referencia las coordenadas originales del Hueso
+    if (this.padre) {
+      if (this.padre.desfaseX) {
+        this.posX = -this.padre.desfaseX;
+        this.posY = -this.padre.desfaseY;
+      }
+    }
 
-    // this.element.elt.style.position = "fixed";
-    this.element.position(this.posX, this.posY);
+    // Para guardar la posición del Hueso antes de cambiarla
+    // Así sé cuánto se movió cada vez
+    this.pPosX = this.posX;
+    this.pPosY = this.posY;
+
+    // Distancia entre la posición del Hueso y la del elemento
+    this.desfaseX = 0;
+    this.desfaseY = 0;
+
+    this.moverA(0, 0);
   }
 
   // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HUESO
-  mover(_mx, _my) {
-    this.actualizarPosTam(_mx, _my, 0, 0);
+  moverA(_x, _y) {
+    // Guardar posición anterior
+    this.pPosX = this.posX;
+    this.pPosY = this.posY;
 
-    this.posX += _mx;
-    this.posY += _my;
+    // Si tiene un padre definido, toma de referencia a su Hueso para las coordenadas
+    // (por defecto toma el 0;0 del lemento, que no tiene por qué ser el mismo)
+    let refeX = 0;
+    let refeY = 0;
+    if (this.padre) {
+      if (this.padre.desfaseX) {        
+        refeX = -this.padre.desfaseX;
+        refeY = -this.padre.desfaseY;
+      }
+    }
+
+    // Si no se da un parámetro, se queda donde estaba
+    // (para no tener que escribir hueso.pos cada vez)
+    if (_x) {
+      this.posX = refeX + _x;
+    }
+    if (_y) {
+      this.posY = refeY + _y;
+    }
+
+    // Actualiza la ubicación del elemento manteniendo su posición relativa al Hueso
+    this.desfasar(false, false);
   }
 
-  // ---------------------------------------------------------------CAMBIAR TAMAÑO DEL HTML
-  actualizarPosTam(_cambiarPX, _cambiarPY, _cambiarTX, _cambiarTY) {
-    // Guardar datos anteriores de tamaño
-    let pPosX = this.element.position().x;
-    let pPosY = this.element.position().y;
-    let pTamX = this.tamX;
-    let pTamY = this.tamY;
-
-    // Leer nuevo tamaño
-    this.tamX = this.element.size().width;
-    this.tamY = this.element.size().height;
-
-    // Calcular cambio de tamaño
-    let cambioX = (this.tamX - pTamX) / 2;
-    let cambioY = (this.tamY - pTamY) / 2;
-
-    /* Según los parámetros, el cambio puede ser:
-        -(Number): El número especificado por parámetro
-        -(false): La diferencia entre antes y después, calculada automáticamente
-    */
-    if (_cambiarTX) {
-      cambioX = _cambiarTX;
+  // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HTML RESPECTO AL HUESO
+  desfasar(_x, _y) {
+    // Si no se da un parámetro de desfase, se queda como estaba
+    // (para no tener que escribir hueso.desfase cada vez)
+    if (_x) {
+      this.desfaseX = _x;
     }
-    if (_cambiarTY) {
-      cambioY = _cambiarTY;
+    if (_y) {
+      this.desfaseY = _y;
     }
 
-    // Reubicar en función del nuevo tamaño
-    this.element.position(
-      pPosX + _cambiarPX - cambioX,
-      pPosY + _cambiarPY - cambioY,
-    );
+    // Mover el elemento sin afectar al Hueso
+    this.element.position(this.posX + this.desfaseX, this.posY + this.desfaseY);
   }
 }
