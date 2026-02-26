@@ -16,6 +16,9 @@ class Evento extends HuesoFlotante {
 
     // Detectar cuando empieza y termina un input dentro del Evento
     this.canDrag = true;
+    this.inputSensor = function (_b) {
+      this.canDrag = _b;
+    };
     this.element.elt.addEventListener(
       "inputAbierto",
       this.inputSensor.bind(this, false),
@@ -39,6 +42,7 @@ class Evento extends HuesoFlotante {
     };
 
     this.vistaDetallada = true;
+    this.seleccionado = true;
 
     // ---------------------------------------------------------------NODO PRINCIPAL
     this.mainDiv = new HuesoFlotante(createDiv(), "eventoMain", this);
@@ -47,17 +51,68 @@ class Evento extends HuesoFlotante {
     this.lugarDiv = new Hueso(createDiv(), "perfil", this.mainDiv);
 
     // Qué ocurre durante la escena
-    this.resumenDiv = new Hueso(
-      createElement("textarea", "Resumen de la acción"),
-      "resumen",
+    this.resumenDiv = new HuesoTexto(
+      "Resumen de la acción",
+      "resumen textBox",
       this.mainDiv,
     );
 
+    this.mainDiv.ajustarTam = function () {
+      // this.mainDiv.desfasar(false, this.mainDiv.actualizarTam().y);
+    };
+    this.mainDiv.element.elt.addEventListener(
+      "inputCerrado",
+      this.mainDiv.ajustarTam.bind(this),
+    );
+
     // Desfasar el contenido para mantenerlo centrado.
+    this.mainDiv.actualizarTam();
     this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
 
+    // ---------------------------------------------------------------CABEZA DEL NODO PRINCIPAL
+    this.headDiv = new HuesoFlotante(createDiv(), "eventoHead", this);
+
+    this.headDiv.headInnerDiv = new Hueso(
+      createDiv(),
+      "eventoInnerHead",
+      this.headDiv,
+    );
+
+    // Horario
+    this.tiempoDiv = new Hueso(
+      createDiv(),
+      "tiempo",
+      this.headDiv.headInnerDiv,
+    );
+    this.tiempoDiv.element.html("12:00");
+
+    // Nivel de tensión
+    this.tensionDiv = new Hueso(
+      createDiv(),
+      "tension",
+      this.headDiv.headInnerDiv,
+    );
+    this.tensionDiv.element.html("hola (?");
+
+    // Índice
+    this.indexDiv = new Hueso(createDiv(), "index", this.headDiv.headInnerDiv);
+    this.indexDiv.element.html("1/1");
+
     // El título
-    this.titleDiv = new Evento_Title("Título", this.mainDiv);
+    this.titleDiv = new HuesoTexto("Título", "title", this.headDiv);
+
+    // Desfasar el contenido para mantenerlo centrado.
+    this.headDiv.actualizarTam();
+    this.headDiv.desfasar(-(this.headDiv.tamX / 2), -this.headDiv.tamY);
+
+    //
+    this.headDiv.ajustarTam = function () {
+      this.headDiv.desfasar(false, -this.headDiv.actualizarTam().y);
+    };
+    this.headDiv.element.elt.addEventListener(
+      "inputCerrado",
+      this.headDiv.ajustarTam.bind(this),
+    );
 
     // Puntos para conectar con las otras escenas de la trama
     this.preTramaLink;
@@ -115,9 +170,9 @@ class Evento extends HuesoFlotante {
   }
 
   // ---------------------------------------------------------------NO PUEDE DRAGGEAR MIENTRAS SE EDITA UN INPUT
-  inputSensor(_b) {
-    this.canDrag = _b;
-  }
+  // inputSensor(_b) {
+  //   this.canDrag = _b;
+  // }
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL
   contextTest1(_e) {
@@ -152,111 +207,4 @@ document.addEventListener("borrarEvento", function (_e) {
 
   // El objeto sólo se borra y ya no tiene referencias en ejecución,
   // así que recemos para que esto sea suficiente (?
-});
-
-// ----------------------------------------------------------------------------CLASE TÍTULO
-class Evento_Title extends HuesoFlotante {
-  // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_cartel, _padre) {
-    super(createDiv(), "title", _padre);
-
-    this.dato = _cartel;
-    this.editando = false;
-
-    // Objeto estático que no se puede editar
-    this.eInherte = createDiv(this.dato);
-    this.eInherte.parent(this.element);
-    this.eInherte.style("userSelect", "none");
-
-    // Objeto de texto editable
-    this.eEditable = createElement("textarea", this.dato);
-    this.eEditable.parent(this.element);
-    this.eEditable.addClass("oculto");
-
-    // Se entra a editar con doble click
-    // y se sale usando el mouse fuera del objeto
-    this.element.doubleClicked(this.editar.bind(this));
-    document.addEventListener("mousedown", this.mouseSensor.bind(this));
-    document.addEventListener("wheel", this.dejarDeEditar.bind(this));
-
-    // Ubicar arriba del nodo principal del Evento
-    this.actualizarTam();
-    this.moverA(-this.tamX / 2, -this.tamY);
-  }
-
-  // ---------------------------------------------------------------ENTRAR EN MODO EDICIÓN
-  editar(_e) {
-    if (!this.editando) {
-      this.editando = true;
-
-      // Esconde el estático y deja el editable seleccionado a la vista
-      // (acomoda el tamaño por si quedó muy grande de la vez anterior)
-      this.eInherte.addClass("oculto");
-      this.eEditable.removeClass("oculto");
-      this.eEditable.size(this.tamX, this.tamY+16);
-      this.eEditable.elt.focus();
-
-      // Avisa que se empezó a editar
-      this.element.elt.dispatchEvent(
-        new CustomEvent("inputAbierto", {
-          bubbles: true, // Allows the event to bubble up the DOM
-          cancelable: true, // Allows the event's default action to be prevented
-        }),
-      );
-    }
-  }
-
-  // ---------------------------------------------------------------SALIR DEL MODO EDICIÓN
-  dejarDeEditar(_e) {
-    if (this.editando) {
-      this.editando = false;
-
-      // Actualizar dato y tamaño
-      this.dato = this.eEditable.value();
-      this.eInherte.html(this.dato);
-
-      // Oculta el editable y muestra el estático
-      this.eEditable.addClass("oculto");
-      this.eInherte.removeClass("oculto");
-
-      // Lo acomoda por si el nuevo texto cambió el tamaño de la caja
-      this.actualizarTam();
-      this.moverA(false, -this.tamY);
-
-      // Avisa que se terminó de editar
-      this.element.elt.dispatchEvent(
-        new CustomEvent("inputCerrado", {
-          bubbles: true, // Allows the event to bubble up the DOM
-          cancelable: true, // Allows the event's default action to be prevented
-        }),
-      );
-    }
-  }
-
-  // ---------------------------------------------------------------DETECTAR EL MOUSE DURANTE LA EDICIÓN
-  mouseSensor(_e) {
-    // Si se usa el mouse fuera del objeto, sale del modo edición
-    if (this.editando) {
-      if (!this.contieneTarget(_e)) {
-        this.dejarDeEditar();
-      }
-    }
-  }
-}
-
-// ----------------------------------------------------------------------------CONTROL DE TEXTAREA
-// Hace que el textarea se acomode al tamaño del texto en tiempo real
-document.addEventListener("input", function (_e) {
-  let t = _e.target;
-
-  // Guardar el tamaño actual y habilitarlo para cambiar
-  let py = int(t.style.height);
-  t.style.height = "auto"; /* Reset height to allow shrinking */
-  t.style.height = t.scrollHeight + "px"; /* Set to the scroll height */
-
-  // Si el nuevo tamaño es mayor, agranda el elemento
-  // Si no, lo deja como estaba
-  if (py > t.scrollHeight) {
-    t.style.height = py + "px";
-  }
 });
