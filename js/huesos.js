@@ -131,7 +131,7 @@ class HuesoFlotante extends Hueso {
   }
 }
 
-// ----------------------------------------------------------------------------CLASE TÍTULO
+// ----------------------------------------------------------------------------CLASE P5 -> HTML PARA TEXTO EDITABLE
 class HuesoTexto extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_cartel, _clase, _padre) {

@@ -47,16 +47,21 @@ class Evento extends HuesoFlotante {
     // ---------------------------------------------------------------NODO PRINCIPAL
     this.mainDiv = new HuesoFlotante(createDiv(), "eventoMain", this);
 
-    // Lugar donde ocurre la escena
+    // Lugar
     this.lugarDiv = new Hueso(createDiv(), "perfil", this.mainDiv);
 
-    // Qué ocurre durante la escena
+    // Resumen
     this.resumenDiv = new HuesoTexto(
       "Resumen de la acción",
       "resumen textBox",
       this.mainDiv,
     );
 
+    // Desfasar el contenido para mantenerlo centrado.
+    this.mainDiv.actualizarTam();
+    this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
+
+    // Acomodar posición cuando cambia su contenido
     this.mainDiv.ajustarTam = function () {
       // this.mainDiv.desfasar(false, this.mainDiv.actualizarTam().y);
     };
@@ -65,20 +70,15 @@ class Evento extends HuesoFlotante {
       this.mainDiv.ajustarTam.bind(this),
     );
 
-    // Desfasar el contenido para mantenerlo centrado.
-    this.mainDiv.actualizarTam();
-    this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
-
     // ---------------------------------------------------------------CABEZA DEL NODO PRINCIPAL
     this.headDiv = new HuesoFlotante(createDiv(), "eventoHead", this);
-
     this.headDiv.headInnerDiv = new Hueso(
       createDiv(),
       "eventoInnerHead",
       this.headDiv,
     );
 
-    // Horario
+    // Tiempo
     this.tiempoDiv = new Hueso(
       createDiv(),
       "tiempo",
@@ -87,12 +87,7 @@ class Evento extends HuesoFlotante {
     this.tiempoDiv.element.html("12:00");
 
     // Nivel de tensión
-    this.tensionDiv = new Hueso(
-      createDiv(),
-      "tension",
-      this.headDiv.headInnerDiv,
-    );
-    this.tensionDiv.element.html("hola (?");
+    this.tensionDiv = new Evento_Tension(this.headDiv.headInnerDiv);
 
     // Índice
     this.indexDiv = new Hueso(createDiv(), "index", this.headDiv.headInnerDiv);
@@ -105,8 +100,8 @@ class Evento extends HuesoFlotante {
     this.headDiv.actualizarTam();
     this.headDiv.desfasar(-(this.headDiv.tamX / 2), -this.headDiv.tamY);
 
-    //
-    this.headDiv.ajustarTam = function () {
+    // Acomodar posición cuando cambia su contenido
+    this.headDiv.ajustarTam = function (_e) {
       this.headDiv.desfasar(false, -this.headDiv.actualizarTam().y);
     };
     this.headDiv.element.elt.addEventListener(

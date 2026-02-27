@@ -45,11 +45,11 @@ class ContextMenu extends HuesoFlotante {
 
   // ---------------------------------------------------------------INVOCAR
   summon(_e) {
-    if (!DEBUG) {
-      _e.preventDefault(); // Prevents the default right-click menu
-    }
+    _e.preventDefault(); // Prevents the default right-click menu
 
     if (!this.dragscrolled) {
+      let primerHueso;
+      
       // Lo esconde y borra lo anterior antes de invocar uno nuevo
       this.ocultar();
 
@@ -61,6 +61,10 @@ class ContextMenu extends HuesoFlotante {
         isNoContext = i.classList.contains("noContext") || !i.parentElement;
 
         if (i.hueso) {
+          if (!primerHueso) {
+            primerHueso = i.hueso;
+          }
+
           let tieneOpciones = i.hueso.contextOptions.length > 0;
           let nuevoEnLista = this.context.indexOf(i.hueso) < 0;
           if (tieneOpciones && nuevoEnLista) {
@@ -90,6 +94,22 @@ class ContextMenu extends HuesoFlotante {
           }
         }
 
+        // Botón de debug para inspeccionar
+        if (DEBUG) {
+          let div = createDiv();
+          div.parent(this.element);
+          div.addClass("contexto_DEBUG");
+
+          let butt = createButton("Inspeccionar");
+          butt.parent(div);
+          let f = function (_p) {
+            console.log(_p);
+          };
+          butt.mouseClicked(f.bind(this, primerHueso));
+          butt.addClass("menuOption");
+          this.buttons.push(butt);
+        }
+
         // Mostrar el menú
         this.element.removeClass("oculto");
         this.moverA(0, 0);
@@ -108,9 +128,9 @@ class ContextMenu extends HuesoFlotante {
         margin = this.tamY + 16;
         dist = windowHeight - cy;
         if (dist < margin) {
-          cy -= (margin - dist);
+          cy -= margin - dist;
         } else if (cy < margin) {
-          cy += (margin - cy);
+          cy += margin - cy;
         }
 
         // Acomodar posición
