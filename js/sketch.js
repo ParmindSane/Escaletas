@@ -4,6 +4,7 @@ let debugCode = "";
 
 let huesoCanvas;
 let contextMenu;
+let iconMenu;
 
 // ----------------------------------------------------------------------------SETUP
 function setup() {
@@ -17,6 +18,7 @@ function setup() {
   rectMode(CENTER);
 
   contextMenu = new ContextMenu();
+  iconMenu = new IconMenu();
 
   actualizar();
 }

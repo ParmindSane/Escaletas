@@ -48,8 +48,10 @@ class Hueso {
   // ---------------------------------------------------------------ACTUALIZAR TAMAÑO DEL ELEMENTO
   actualizarTam() {
     // Guardar acceso rápido al tamaño actual del elemento
-    this.tamX = this.element.size().width;
-    this.tamY = this.element.size().height;
+    // this.tamX = this.element.size().width;
+    // this.tamY = this.element.size().height;
+    this.tamX = this.element.elt.clientWidth;
+    this.tamY = this.element.elt.clientHeight;
 
     return { x: this.tamX, y: this.tamY };
   }
@@ -135,7 +137,7 @@ class HuesoFlotante extends Hueso {
 class HuesoTexto extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_cartel, _clase, _padre) {
-    super(createDiv(), _clase, _padre);
+    super(createDiv(), _clase + " huesoTexto", _padre);
 
     this.dato = _cartel;
     this.editando = false;
@@ -156,21 +158,8 @@ class HuesoTexto extends Hueso {
     document.addEventListener("mousedown", this.mouseSensor.bind(this));
     document.addEventListener("wheel", this.dejarDeEditar.bind(this));
 
-    // Hace que el textarea se acomode al tamaño del texto en tiempo real
-    this.eEditable.input(function (_e) {
-      let t = _e.target;
-
-      // Guardar el tamaño actual y habilitarlo para cambiar
-      let py = int(t.style.height);
-      t.style.height = "auto"; /* Reset height to allow shrinking */
-      t.style.height = t.scrollHeight + "px"; /* Set to the scroll height */
-
-      // Si el nuevo tamaño es mayor, agranda el elemento
-      // Si no, lo deja como estaba
-      if (py > t.scrollHeight) {
-        t.style.height = py + "px";
-      }
-    });
+    // Actualizar el tamaño de la caja a medida que se escribe
+    this.eEditable.input(this.inputTam.bind(this));
 
     this.actualizarTam();
   }
@@ -204,6 +193,7 @@ class HuesoTexto extends Hueso {
 
       // Actualizar dato y tamaño
       this.dato = this.eEditable.value();
+      console.log(this.dato);
       this.eInherte.html(this.dato);
 
       // Oculta el editable y muestra el estático
@@ -212,7 +202,6 @@ class HuesoTexto extends Hueso {
 
       // Por si el nuevo texto cambió el tamaño de la caja
       this.actualizarTam();
-      // this.moverA(false, -this.tamY);
 
       // Avisa que se terminó de editar
       this.element.elt.dispatchEvent(
@@ -230,6 +219,149 @@ class HuesoTexto extends Hueso {
     if (this.editando) {
       if (!this.contieneTarget(_e)) {
         this.dejarDeEditar();
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------ACTUALIZAR TAMAÑO AL ESCRIBIR
+  inputTam() {
+    // Guardar el tamaño actual y habilitarlo para cambiar
+    let py = int(this.eEditable.elt.style.height);
+    this.eEditable.elt.style.height =
+      "auto"; /* Reset height to allow shrinking */
+    this.eEditable.elt.style.height =
+      this.eEditable.elt.scrollHeight + "px"; /* Set to the scroll height */
+
+    // Si el nuevo tamaño es mayor, agranda el elemento
+    // Si no, lo deja como estaba
+    if (py > this.eEditable.elt.scrollHeight) {
+      this.eEditable.elt.style.height = py + "px";
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------CLASE P5 -> HTML PARA ICONITOS
+class HuesoIcon extends Hueso {
+  // ---------------------------------------------------------------CONSTRUCTOR
+  constructor(_tipo, _icon, _padre, _editable) {
+    super(createDiv(), "iconito", _padre);
+
+    this.icon = _icon;
+    this.tipo = _tipo;
+
+    this.cambiar();
+
+    // Si es un logo que el usuario puede cambiar,
+    // invoca las opciones al hacerle doble click
+    this.editable = _editable;
+    if (this.editable) {
+      this.element.doubleClicked(this.pedirCambio.bind(this));
+      this.element.elt.addEventListener("iconChange", this.cambiar.bind(this));
+    }
+  }
+
+  // ---------------------------------------------------------------DESPLEGAR OPCIONES
+  pedirCambio(_e) {
+    // Llama al menú de opciones
+    this.element.elt.dispatchEvent(
+      new CustomEvent("iconMenu", {
+        detail: {
+          target: this,
+          mouseX: _e.clientX,
+          mouseY: _e.clientY,
+        },
+        bubbles: true, // Allows the event to bubble up the DOM
+        cancelable: true, // Allows the event's default action to be prevented
+      }),
+    );
+  }
+
+  // ---------------------------------------------------------------CAMBIAR ICONITO
+  cambiar(_e) {
+    // Si no viene ningún parámetro, crea un ícono nuevito de cero.
+    // Si hay parámetro, debería ser el evento que viene del menú,
+    // así que le asigna directamente el ícono para no tener que crearlo otra vez.
+    if (_e) {
+      this.content = _e.detail.icon;
+    } else {
+      // Traté de generarlo como p5.Element
+      // pero cargaba mal la ruta y me dio paja xd
+      this.content =
+        '<svg class="icon" width="32" height="32" viewBox="0 0 32 32">' +
+        '<use href="./assets/icons/' +
+        this.tipo +
+        ".svg#" +
+        this.icon +
+        '"></use>' +
+        "</svg>";
+    }
+
+    this.element.html(this.content);
+  }
+}
+
+// ----------------------------------------------------------------------------CLASE MENÚ DESPLEGABLE
+class HuesoSummonMenu extends HuesoFlotante {
+  // ---------------------------------------------------------------CONSTRUCTOR
+  constructor(_select) {
+    super(_select);
+
+    this.invocado = false;
+
+    //cerrar menú con la siguiente acción del mouse
+    document.addEventListener("mousedown", this.mouseSensor.bind(this));
+    document.addEventListener("wheel", this.mouseSensor.bind(this));
+    document.addEventListener("click", this.ocultar.bind(this, false));
+  }
+
+  // ---------------------------------------------------------------INVOCAR
+  summonAt(_x, _y) {
+    this.invocado = true;
+
+    // Mostrar el menú
+    this.element.removeClass("oculto");
+    this.actualizarTam();
+
+    // Evitar que se salga de la pantalla por la derecha
+    let cx = _x + 4;
+    let margin = this.tamX + 16;
+    let dist = windowWidth - cx;
+    if (dist < margin) {
+      cx -= margin - dist;
+    }
+    // Y por abajo
+    let cy = _y;
+    margin = this.tamY + 16;
+    dist = windowHeight - cy;
+    if (dist < margin) {
+      cy -= margin - dist;
+    }
+
+    // Acomodar posición
+    this.moverA(cx, cy);
+  }
+
+  // ---------------------------------------------------------------OCULTAR
+  ocultar(_vaciar) {
+    this.invocado = false;
+
+    // Vaciar
+    if (_vaciar) {
+      this.context = [];
+      this.buttons = [];
+      this.element.html(" ");
+    }
+
+    // Esconder
+    this.element.addClass("oculto");
+  }
+
+  // ---------------------------------------------------------------OCULTAR POR CLICK EXTERNO
+  mouseSensor(_e) {
+    // Oculta el menú si se usa el mouse fuera de él mientras está invocado
+    if (this.invocado) {
+      if (!this.contieneTarget(_e)) {
+        this.ocultar(false);
       }
     }
   }

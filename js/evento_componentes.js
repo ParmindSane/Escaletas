@@ -1,18 +1,18 @@
-// ----------------------------------------------------------------------------CLASE
+// ----------------------------------------------------------------------------CLASE TERMÓMETRO
 class Evento_Tension extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_padre) {
-    super(createDiv(), "tension", _padre);
+    super(createDiv(), "tension noContainer", _padre);
 
     // Valores que puede tomar el slider
     this.nivel = 0;
     this.nivelMin = 0;
-    this.nivelMax = 10;
+    this.nivelMax = 2;
 
     // Crear el slider encima del termómetro
     this.sliding = false;
     this.slider = new HuesoFlotante(
-      createSlider(this.nivelMin, (this.nivelMax = 10), this.nivel, 1),
+      createSlider(this.nivelMin, this.nivelMax, this.nivel, 1),
       "slider",
       this,
     );
@@ -27,6 +27,11 @@ class Evento_Tension extends Hueso {
     // Actualizar el color cuando se mueve el slider
     this.slider.element.input(this.cambiarNivel.bind(this));
     this.cambiarNivel();
+
+    document.addEventListener(
+      "eventoSeleccionado",
+      this.selectSensor.bind(this),
+    );
   }
 
   // ---------------------------------------------------------------DETECTAR USO DEL SLIDER
@@ -60,4 +65,37 @@ class Evento_Tension extends Hueso {
     let nuevoColor = "hsl(" + nivelColor + ", 100%, 50%)";
     this.element.style("background-color", nuevoColor);
   }
+
+  // ---------------------------------------------------------------MOSTRAR/OCULTAR EL SLIDER
+  selectSensor(_e) {
+    // Sólo muestra el slider cuando el Evento que lo contiene está seleccionado
+    if (_e.target.contains(this.element.elt)) {
+      if (_e.detail.selected) {
+        this.slider.element.removeClass("oculto");
+      } else {
+        this.slider.element.addClass("oculto");
+      }
+    }
+  }
 }
+
+// ----------------------------------------------------------------------------CLASE APORTE
+class Evento_Aporte extends Hueso {
+  // ---------------------------------------------------------------CONSTRUCTOR
+  constructor(_padre) {
+    super(createDiv(), "aporte noContainer textBox", _padre);
+
+    this.texto = new HuesoTexto("Dato relevante", "aporte_texto", this);
+
+    this.iconDiv = new Hueso(createDiv(), "icon_container", this);
+    this.iconito = new HuesoIcon("test2", "rombo", this.iconDiv, true);
+  }
+}
+
+// // ----------------------------------------------------------------------------CLASE AGREGAR
+// class Evento_Agregar extends Hueso {
+//   // ---------------------------------------------------------------CONSTRUCTOR
+//   constructor(_clase, _padre) {
+//     super(createDiv(), _clase + " noContainer agregar", _padre);
+//   }
+// }

@@ -17,19 +17,6 @@
 
   <body>
     <div id="body" class="noContext" style="width: 100vw; height: 100vh">
-      <!-- ----------------------------------------------------------------------------INTERFAZ -->
-      <!-- <header
-        id="interfaz"
-        style="
-          width: 100vw;
-          height: 100px;
-
-          background-color: white;
-        "
-      >
-        <p>Interfaz</p>
-      </header> -->
-
       <!-- ----------------------------------------------------------------------------CANVAS -->
       <section
         id="canvas"
@@ -37,10 +24,37 @@
         style="height: 100%; overflow: auto; position: relative"
       ></section>
 
-      <!-- ----------------------------------------------------------------------------CONTEXT MENU -->
+      <!-- ----------------------------------------------------------------------------INTERFAZ -->
+
+      <!-- ------------------------------------------------------------CONTEXT MENU -->
       <div id="contextMenu" class="noContext">
         <button class="menuOption"></button>
       </div>
+
+      <!-- ------------------------------------------------------------ICON MENU -->
+      <div id="iconMenu" class="noContext oculto"></div>
+
+      <!-- ------------------------------------------------------------BARRA SUPERIOR -->
+      <!-- <header
+        id="barraSuperior"
+        class="noContext"
+        style="
+          width: 100vw;
+          height: 80px;
+
+          position: absolute;
+          top: 0px;
+          left: 0px;
+
+          display: flex;
+          flex-direction: row;
+          justify-content: baseline;
+          align-items: baseline;
+
+          background-color: rgb(244, 244, 244);
+        "
+      >
+      </header> -->
     </div>
 
     <!-- ----------------------------------------------------------------------------SCRIPTS -->
@@ -61,7 +75,7 @@
     <script src="./js/scrollArea.js"></script>
 
     <!-- Eventos -->
-     <script src="./js/evento_componentes.js"></script>
+    <script src="./js/evento_componentes.js"></script>
     <script src="./js/evento.js"></script>
 
     <!-- Personajes -->

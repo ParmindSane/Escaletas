@@ -12,8 +12,8 @@ class HuesoCanvas extends Hueso {
 
     // Eventos del mouse para el dragscroll
     this.element.mousePressed(this.mouseDownHandler.bind(this));
-    this.element.mouseMoved(this.mouseMoveHandler.bind(this));
-    this.element.mouseReleased(this.mouseUpHandler.bind(this));
+    document.addEventListener("mousemove", this.mouseMoveHandler.bind(this));
+    document.addEventListener("mouseup", this.mouseUpHandler.bind(this));
 
     // Opciones para el menú contextual
     this.newContextOption("crearEvento", "Nuevo evento");

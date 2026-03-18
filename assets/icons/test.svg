@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="test.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="12.186869"
+     inkscape:cx="13.949441"
+     inkscape:cy="21.1293"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <symbol
+       id="happy">
+      <g
+         id="happy_transform"
+         transform="matrix(5.181888,0,0,5.181888,-8.1435862,-6.8707093)"
+         inkscape:label="">
+        <path
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.265;stroke-linejoin:round;stroke-dasharray:none"
+           d="M 7.6144094,4.5594432 C 6.5756138,7.9163395 4.7385319,8.2643105 2.1031636,5.603356 Z"
+           id="path1"
+           sodipodi:nodetypes="ccc" />
+        <circle
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.264999;stroke-linejoin:round;stroke-dasharray:none"
+           id="circle1"
+           cx="2.4025481"
+           cy="2.7402716"
+           r="0.69850051" />
+        <circle
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.264999;stroke-linejoin:round;stroke-dasharray:none"
+           id="circle2"
+           cx="5.8873615"
+           cy="2.1569085"
+           r="0.69850051" />
+      </g>
+    </symbol>
+    <symbol
+       id="sad"
+       style="display:inline">
+      <g
+         id="sad_transform"
+         transform="matrix(5.181888,0,0,5.181888,-8.1435862,-6.8707093)">
+        <desc
+           id="desc4">Estoy triste D:</desc>
+        <path
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.265;stroke-linejoin:round;stroke-dasharray:none"
+           d="M 2.1031714,7.3687677 C 3.141967,4.0118714 4.9790489,3.6639004 7.6144172,6.3248549 Z"
+           id="path1-8"
+           sodipodi:nodetypes="ccc" />
+        <circle
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.264999;stroke-linejoin:round;stroke-dasharray:none"
+           id="path2-2"
+           cx="2.4025481"
+           cy="2.7402716"
+           r="0.69850051" />
+        <circle
+           style="display:inline;fill:#000000;stroke:#000000;stroke-width:0.264999;stroke-linejoin:round;stroke-dasharray:none"
+           id="circle2-4"
+           cx="5.8873615"
+           cy="2.1569085"
+           r="0.69850051" />
+      </g>
+    </symbol>
+  </defs>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:inline" />
+</svg>

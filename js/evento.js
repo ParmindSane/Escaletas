@@ -1,14 +1,18 @@
 // ----------------------------------------------------------------------------CLASE EVENTO
-class Evento extends HuesoFlotante {
+class HuesoEvento extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_x, _y, _element, _clase, _padre) {
-    super(_element, _clase, _padre);
+  constructor(_x, _y, _padre) {
+    super(createDiv(), "evento", _padre);
     this.moverA(_x, _y);
+
+    this.vistaDetallada = true;
+    this.seleccionado = true;
 
     // Cosas para hacer el Evento draggeable
     // (Algunos eventos son con base document por si el mouse se sale del área mientras draggea)
     this.dragClick = false;
     this.dragging = false;
+    this.dragged = false;
     this.dragData = { px: 0, py: 0, mx: 0, my: 0 };
     this.element.mousePressed(this.mouseDown.bind(this));
     document.addEventListener("mousemove", this.mouseMoved.bind(this));
@@ -41,9 +45,6 @@ class Evento extends HuesoFlotante {
       aportes: [], //ARREGLO DE DOS DIMENSIONES: [PERSONAJE][DATO] (el personajes.length sería el general)
     };
 
-    this.vistaDetallada = true;
-    this.seleccionado = true;
-
     // ---------------------------------------------------------------NODO PRINCIPAL
     this.mainDiv = new HuesoFlotante(createDiv(), "eventoMain", this);
 
@@ -53,13 +54,17 @@ class Evento extends HuesoFlotante {
     // Resumen
     this.resumenDiv = new HuesoTexto(
       "Resumen de la acción",
-      "resumen textBox",
+      "resumen textBox noContainer",
       this.mainDiv,
     );
 
-    // Desfasar el contenido para mantenerlo centrado.
+    // Desfasar el contenido para mantenerlo centrado
     this.mainDiv.actualizarTam();
     this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
+
+    // Aportes
+    this.aportesDiv = new Hueso(createDiv(), "aportes", this.mainDiv);
+    this.aporte = new Evento_Aporte(this.aportesDiv);
 
     // Acomodar posición cuando cambia su contenido
     this.mainDiv.ajustarTam = function () {
@@ -81,7 +86,7 @@ class Evento extends HuesoFlotante {
     // Tiempo
     this.tiempoDiv = new Hueso(
       createDiv(),
-      "tiempo",
+      "tiempo noContainer",
       this.headDiv.headInnerDiv,
     );
     this.tiempoDiv.element.html("12:00");
@@ -90,11 +95,15 @@ class Evento extends HuesoFlotante {
     this.tensionDiv = new Evento_Tension(this.headDiv.headInnerDiv);
 
     // Índice
-    this.indexDiv = new Hueso(createDiv(), "index", this.headDiv.headInnerDiv);
+    this.indexDiv = new Hueso(
+      createDiv(),
+      "index noContainer",
+      this.headDiv.headInnerDiv,
+    );
     this.indexDiv.element.html("1/1");
 
     // El título
-    this.titleDiv = new HuesoTexto("Título", "title", this.headDiv);
+    this.titleDiv = new HuesoTexto("Título", "title noContainer", this.headDiv);
 
     // Desfasar el contenido para mantenerlo centrado.
     this.headDiv.actualizarTam();
@@ -128,6 +137,7 @@ class Evento extends HuesoFlotante {
     // Y si no hay inputs abiertos
     if (_e.button === 0 && this.canDrag) {
       this.dragClick = true;
+      this.dragged = false;
 
       // Guardar datos iniciales del mouse
       this.dragData.px = mouseX;
@@ -159,15 +169,45 @@ class Evento extends HuesoFlotante {
     // Detener el dragging al soltar el mouse
     if (this.dragging) {
       this.element.style("cursor", "default");
+      this.dragged = true;
+    } else {
+      this.dragged = false;
     }
     this.dragging = false;
     this.dragClick = false;
+
+    // ---------------------------------------------------------------SELECCIONAR EVENTO
+    if (!this.dragged) {
+      // Detecta si el click fue adentro o afuera del Evento
+      let b = this.contieneTarget(_e);
+
+      // Lo descarta si fue igual que el anterior
+      if (b != this.seleccionado) {
+        let t = _e.target;
+
+        // Cuenta como adentro si fue dentro de su menú contextual asociado
+        // Pregunta si soy el objetivo del botón pulsado en el menú
+        // DEJA DE FUNCIONAR SI HAY MÁS ELEMENTOS CONTENIDOS EN EL BOTÓN DEL MENÚ
+        console.log(t);
+        let fueMiContextMenu = t.objetivo
+          ? this.element.elt.contains(t.objetivo.element.elt)
+          : false;
+
+        this.seleccionado = b || fueMiContextMenu;
+
+        // Avisa a los hijos para que muestren/oculten las opciones adicionales
+        this.element.elt.dispatchEvent(
+          new CustomEvent("eventoSeleccionado", {
+            detail: { selected: this.seleccionado },
+            bubbles: true,
+          }),
+        );
+      }
+    }
   }
 
-  // ---------------------------------------------------------------NO PUEDE DRAGGEAR MIENTRAS SE EDITA UN INPUT
-  // inputSensor(_b) {
-  //   this.canDrag = _b;
-  // }
+  // ---------------------------------------------------------------AGREGAR APORTE
+  nuevoAporte() {}
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL
   contextTest1(_e) {
@@ -178,15 +218,7 @@ class Evento extends HuesoFlotante {
 // ----------------------------------------------------------------------------CREAR EVENTO NUEVO
 let eventos = [];
 document.addEventListener("crearEvento", function (_e) {
-  eventos.push(
-    new Evento(
-      round(mouseX),
-      round(mouseY),
-      createDiv(),
-      "evento",
-      huesoCanvas,
-    ),
-  );
+  eventos.push(new HuesoEvento(round(mouseX), round(mouseY), huesoCanvas));
 });
 
 // ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
