@@ -55,6 +55,7 @@ class ContextMenu extends HuesoSummonMenu {
         isNoContext = i.classList.contains("noContext") || !i.parentElement;
 
         if (i.hueso) {
+          // Guarda el primer hueso que encuentra, por si sirve para algo ah
           if (!primerHueso) {
             primerHueso = i.hueso;
           }

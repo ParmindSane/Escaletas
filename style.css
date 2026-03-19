@@ -11,7 +11,7 @@ textarea {
   resize: none;
   overflow: hidden;
 }
-textarea:focus{
+textarea:focus {
   position: relative;
   z-index: 100;
 }
@@ -52,7 +52,8 @@ textarea:focus{
 }
 
 /* ---------------------------------------------------------------MENÚ CONTEXTUAL */
-#contextMenu, #iconMenu {
+#contextMenu,
+#iconMenu {
   z-index: 10;
 
   /* max-height: 200px;

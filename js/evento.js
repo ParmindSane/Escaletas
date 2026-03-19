@@ -32,6 +32,13 @@ class HuesoEvento extends HuesoFlotante {
       this.inputSensor.bind(this, true),
     );
 
+    // Contacto directo con los objetos que sólo se muestran al seleccionar el Evento
+    this.ocultables = [];
+    let f = function (_e) {
+      this.ocultables.push(_e.target);
+    };
+    this.element.elt.addEventListener("holaSoyOcultable", f.bind(this));
+
     // Datos de la escaleta
     this.datos = {
       title: "",
@@ -181,27 +188,45 @@ class HuesoEvento extends HuesoFlotante {
       // Detecta si el click fue adentro o afuera del Evento
       let b = this.contieneTarget(_e);
 
-      // Lo descarta si fue igual que el anterior
+      // Lo descarta si fue igual que el anterior, así evitamos redundancias
       if (b != this.seleccionado) {
         let t = _e.target;
 
-        // Cuenta como adentro si fue dentro de su menú contextual asociado
-        // Pregunta si soy el objetivo del botón pulsado en el menú
-        // DEJA DE FUNCIONAR SI HAY MÁS ELEMENTOS CONTENIDOS EN EL BOTÓN DEL MENÚ
-        console.log(t);
-        let fueMiContextMenu = t.objetivo
-          ? this.element.elt.contains(t.objetivo.element.elt)
-          : false;
+        // Si la acción del mouse fue en un menú contextual...
+        let fueMiContextMenu = false;
+        if (document.getElementById("summonableMenus").contains(t)) {
+          // ...y si este Evento es el objetivo del botón pulsado,
+          // lo toma como acción interna y no anula la selección
+          // Recorre varios objetos por si justo se disparó en un hijo que no lo conoce
+          let esteEsElPosta = false;
+          let meFuiDeMambo = false;
+          for (
+            let i = t;
+            !esteEsElPosta && !meFuiDeMambo;
+            i = i.parentElement
+          ) {
+            meFuiDeMambo =
+              i.classList.contains("noContext") || !i.parentElement;
+            esteEsElPosta = i.objetivo;
+            if (esteEsElPosta) {
+              fueMiContextMenu = this.element.elt.contains(
+                i.objetivo.element.elt,
+              );
+            }
+          }
+        }
 
+        // Ahora sí: ¿está seleccionado o no?
         this.seleccionado = b || fueMiContextMenu;
 
-        // Avisa a los hijos para que muestren/oculten las opciones adicionales
-        this.element.elt.dispatchEvent(
-          new CustomEvent("eventoSeleccionado", {
-            detail: { selected: this.seleccionado },
-            bubbles: true,
-          }),
-        );
+        // Muestra/oculta las opciones adicionales
+        this.ocultables.forEach((o) => {
+          if (this.seleccionado) {
+            o.classList.remove("oculto");
+          } else {
+            o.classList.add("oculto");
+          }
+        });
       }
     }
   }

@@ -248,7 +248,9 @@ class HuesoIcon extends Hueso {
 
     this.icon = _icon;
     this.tipo = _tipo;
+    this.description = "Ícono";
 
+    // Establecer ícono inicial
     this.cambiar();
 
     // Si es un logo que el usuario puede cambiar,

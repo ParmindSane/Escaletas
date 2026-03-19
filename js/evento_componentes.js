@@ -28,9 +28,12 @@ class Evento_Tension extends Hueso {
     this.slider.element.input(this.cambiarNivel.bind(this));
     this.cambiarNivel();
 
-    document.addEventListener(
-      "eventoSeleccionado",
-      this.selectSensor.bind(this),
+    // Avisar que este objeto sólo se muestra al seleccionar el Evento
+    this.slider.element.elt.dispatchEvent(
+      new CustomEvent("holaSoyOcultable", {
+        bubbles: true,
+        cancelable: true,
+      }),
     );
   }
 
@@ -66,17 +69,17 @@ class Evento_Tension extends Hueso {
     this.element.style("background-color", nuevoColor);
   }
 
-  // ---------------------------------------------------------------MOSTRAR/OCULTAR EL SLIDER
-  selectSensor(_e) {
-    // Sólo muestra el slider cuando el Evento que lo contiene está seleccionado
-    if (_e.target.contains(this.element.elt)) {
-      if (_e.detail.selected) {
-        this.slider.element.removeClass("oculto");
-      } else {
-        this.slider.element.addClass("oculto");
-      }
-    }
-  }
+  // // ---------------------------------------------------------------MOSTRAR/OCULTAR EL SLIDER
+  // selectSensor(_e) {
+  //   // Sólo muestra el slider cuando el Evento que lo contiene está seleccionado
+  //   if (_e.target.contains(this.element.elt)) {
+  //     if (_e.detail.selected) {
+  //       this.slider.element.removeClass("oculto");
+  //     } else {
+  //       this.slider.element.addClass("oculto");
+  //     }
+  //   }
+  // }
 }
 
 // ----------------------------------------------------------------------------CLASE APORTE
