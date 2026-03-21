@@ -5,6 +5,7 @@ body {
   padding: 0;
 
   overflow: hidden;
+  user-select: none;
 }
 
 textarea {
@@ -51,6 +52,26 @@ textarea:focus {
   background-color: white;
 }
 
+/* ---------------------------------------------------------------BOTÓN AGREGAR */
+.agregar,
+.agregar * {
+  display: flex;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+.agregar * {
+  width: 28px !important;
+  height: 28px !important;
+
+  font-weight: bolder !important;
+  text-align: center !important;
+
+  background-color: lightgrey !important;
+  border: 2px solid black !important;
+  border-radius: 100% !important;
+}
+
 /* ---------------------------------------------------------------MENÚ CONTEXTUAL */
 #contextMenu,
 #iconMenu {
@@ -89,7 +110,7 @@ textarea:focus {
   background-color: white;
   border: 2px solid black;
 
-  user-select: none;
+  /* user-select: none; */
 }
 .menuOption:hover {
   background-color: hsl(0, 0%, 90%);
@@ -132,9 +153,15 @@ textarea:focus {
   min-height: 100px;
 }
 
-/* .aportes {
-} */
+.aportesInner {
+  display: flex;
+  flex-direction: column;
+  gap: -1px;
+}
 .aporte {
+  min-width: 50px;
+  min-height: 50px;
+
   display: flex;
   flex-direction: row;
   justify-content: space-between;

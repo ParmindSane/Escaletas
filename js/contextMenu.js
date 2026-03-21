@@ -83,7 +83,7 @@ class ContextMenu extends HuesoSummonMenu {
           for (let o of c.contextOptions) {
             let butt = createButton(o.texto);
             butt.parent(div);
-            butt.mouseClicked(o.ejecutar.bind(o));
+            butt.mouseClicked(o.ejecutar.bind(o, _e));
             butt.addClass("menuOption noContext");
             butt.elt.objetivo = c;
             this.buttons.push(butt);
@@ -127,12 +127,11 @@ class ContextOption {
   }
 
   // ---------------------------------------------------------------MANDAR EVENTO ASOCIADO
-  ejecutar() {
-    let h = this.hueso;
+  ejecutar(_e) {
     this.hueso.element.elt.dispatchEvent(
       new CustomEvent(this.event, {
         detail: {
-          hueso: h,
+          original_e: _e,
         },
         bubbles: true, // Allows the event to bubble up the DOM
         cancelable: true, // Allows the event's default action to be prevented

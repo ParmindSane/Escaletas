@@ -63,6 +63,7 @@ class HuesoEvento extends HuesoFlotante {
       "Resumen de la acción",
       "resumen textBox noContainer",
       this.mainDiv,
+      true,
     );
 
     // Desfasar el contenido para mantenerlo centrado
@@ -70,8 +71,7 @@ class HuesoEvento extends HuesoFlotante {
     this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
 
     // Aportes
-    this.aportesDiv = new Hueso(createDiv(), "aportes", this.mainDiv);
-    this.aporte = new Evento_Aporte(this.aportesDiv);
+    this.aportesDiv = new Evento_Aportes(this.mainDiv);
 
     // Acomodar posición cuando cambia su contenido
     this.mainDiv.ajustarTam = function () {
@@ -186,10 +186,10 @@ class HuesoEvento extends HuesoFlotante {
     // ---------------------------------------------------------------SELECCIONAR EVENTO
     if (!this.dragged) {
       // Detecta si el click fue adentro o afuera del Evento
-      let b = this.contieneTarget(_e);
+      let laTieneAdentro = this.contieneTarget(_e);
 
       // Lo descarta si fue igual que el anterior, así evitamos redundancias
-      if (b != this.seleccionado) {
+      if (laTieneAdentro != this.seleccionado) {
         let t = _e.target;
 
         // Si la acción del mouse fue en un menú contextual...
@@ -217,7 +217,7 @@ class HuesoEvento extends HuesoFlotante {
         }
 
         // Ahora sí: ¿está seleccionado o no?
-        this.seleccionado = b || fueMiContextMenu;
+        this.seleccionado = laTieneAdentro || fueMiContextMenu;
 
         // Muestra/oculta las opciones adicionales
         this.ocultables.forEach((o) => {

@@ -39,6 +39,22 @@ class Hueso {
     }
   }
 
+  // ---------------------------------------------------------------BORRAR DE LA EXISTENCIA
+  borrar() {
+    this.element.remove();
+  }
+
+  // ---------------------------------------------------------------ATAJO PARA HACER OCULTABLE
+  // Me daba paja copiarlo y pegarlo cada vez xd
+  hacerOcultable() {
+    this.element.elt.dispatchEvent(
+      new CustomEvent("holaSoyOcultable", {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+
   // ---------------------------------------------------------------DETECTAR SI EL EVENTO SE DISPARÓ DENTRO DEL OBJETO
   contieneTarget(_e) {
     let t = _e.target;
@@ -136,11 +152,10 @@ class HuesoFlotante extends Hueso {
 // ----------------------------------------------------------------------------CLASE P5 -> HTML PARA TEXTO EDITABLE
 class HuesoTexto extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_cartel, _clase, _padre) {
+  constructor(_cartel, _clase, _padre, _startOpen) {
     super(createDiv(), _clase + " huesoTexto", _padre);
 
     this.dato = _cartel;
-    this.editando = false;
 
     // Objeto estático que no se puede editar
     this.eInherte = createDiv(this.dato);
@@ -150,7 +165,18 @@ class HuesoTexto extends Hueso {
     // Objeto de texto editable
     this.eEditable = createElement("textarea", this.dato);
     this.eEditable.parent(this.element);
-    this.eEditable.addClass("oculto");
+
+    // ¿Arranca editando o mostrando?
+    this.editando = _startOpen;
+    if (!this.editando) {
+      this.eEditable.addClass("oculto");
+    } else {
+      // this.eInherte.addClass("oculto");
+
+      // El textarea arranca abierto y con el texto seleccionado
+      this.editar(true);
+      this.eEditable.elt.setSelectionRange(0, this.dato.length);
+    }
 
     // Se entra a editar con doble click
     // y se sale usando el mouse fuera del objeto
@@ -165,8 +191,8 @@ class HuesoTexto extends Hueso {
   }
 
   // ---------------------------------------------------------------ENTRAR EN MODO EDICIÓN
-  editar(_e) {
-    if (!this.editando) {
+  editar(_b) {
+    if (!this.editando || _b) {
       this.editando = true;
 
       // Esconde el estático y deja el editable seleccionado a la vista
@@ -191,9 +217,11 @@ class HuesoTexto extends Hueso {
     if (this.editando) {
       this.editando = false;
 
+      // Evita que el texto se quede seleccionado
+      this.eEditable.elt.selectionEnd = 0;
+
       // Actualizar dato y tamaño
       this.dato = this.eEditable.value();
-      console.log(this.dato);
       this.eInherte.html(this.dato);
 
       // Oculta el editable y muestra el estático
@@ -259,18 +287,32 @@ class HuesoIcon extends Hueso {
     if (this.editable) {
       this.element.doubleClicked(this.pedirCambio.bind(this));
       this.element.elt.addEventListener("iconChange", this.cambiar.bind(this));
+
+      this.newContextOption(
+        "pedirCambio",
+        "Cambiar ícono",
+        this.pedirCambio.bind(this),
+      );
     }
   }
 
   // ---------------------------------------------------------------DESPLEGAR OPCIONES
   pedirCambio(_e) {
+    // Si la llamada fue por menú contextual,
+    // tiene que buscar el evento de mouse original en detail
+    // EN TEORÍA, PORQUE AHORA MISMO NO FUNCA Y NO ENTIENDO EL MOTIVO >:/
+    let e = _e;
+    if (!e.clientX) {
+      e = _e.detail.original_e;
+    }
+
     // Llama al menú de opciones
     this.element.elt.dispatchEvent(
       new CustomEvent("iconMenu", {
         detail: {
           target: this,
-          mouseX: _e.clientX,
-          mouseY: _e.clientY,
+          mouseX: e.clientX,
+          mouseY: e.clientY,
         },
         bubbles: true, // Allows the event to bubble up the DOM
         cancelable: true, // Allows the event's default action to be prevented
