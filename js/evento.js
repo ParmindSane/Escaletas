@@ -19,9 +19,9 @@ class HuesoEvento extends HuesoFlotante {
     document.addEventListener("mouseup", this.mouseUp.bind(this));
 
     // Detectar cuando empieza y termina un input dentro del Evento
-    this.canDrag = true;
+    this.inputAbierto = true;
     this.inputSensor = function (_b) {
-      this.canDrag = _b;
+      this.inputAbierto = _b;
     };
     this.element.elt.addEventListener(
       "inputAbierto",
@@ -34,10 +34,13 @@ class HuesoEvento extends HuesoFlotante {
 
     // Contacto directo con los objetos que sólo se muestran al seleccionar el Evento
     this.ocultables = [];
-    let f = function (_e) {
+    let unOcultable = function (_e) {
       this.ocultables.push(_e.target);
     };
-    this.element.elt.addEventListener("holaSoyOcultable", f.bind(this));
+    this.element.elt.addEventListener(
+      "holaSoyOcultable",
+      unOcultable.bind(this),
+    );
 
     // Datos de la escaleta
     this.datos = {
@@ -141,8 +144,13 @@ class HuesoEvento extends HuesoFlotante {
   // ---------------------------------------------------------------EVENTOS PARA DRAGGEAR
   mouseDown(_e) {
     // Al pulsar el click izquierdo sobre el objeto
-    // Y si no hay inputs abiertos
-    if (_e.button === 0 && this.canDrag) {
+    // Si no hay inputs abiertos
+    // Ni estás parado sobre un ocultable
+    let paradoSobreOcultable = false;
+    for (let i = 0; i < this.ocultables.length && !paradoSobreOcultable; i++) {
+      paradoSobreOcultable = this.ocultables[i].hueso.contieneTarget(_e);
+    }
+    if (_e.button === 0 && this.inputAbierto && !paradoSobreOcultable) {
       this.dragClick = true;
       this.dragged = false;
 

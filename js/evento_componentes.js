@@ -88,7 +88,6 @@ class Evento_Aportes extends Hueso {
   // ---------------------------------------------------------------AGREGAR APORTE
   nuevoAporte(_startOpen) {
     let a = new Hueso(createDiv(), "aporte noContainer textBox", this.innerDiv);
-    a.newContextOption("borrar_aporte", "Borrar aporte", a.borrar.bind(a));
 
     let t = new HuesoTexto("Dato relevante", "aporte_texto", a, _startOpen);
 
@@ -96,6 +95,18 @@ class Evento_Aportes extends Hueso {
     let i = new HuesoIcon("test2", "rombo", iDiv, true);
 
     this.aportes.push(a);
+
+    a.newContextOption(
+      "borrarAporte",
+      "Borrar aporte",
+      this.borrarAporte.bind(this, this.aportes.indexOf(a)),
+    );
+  }
+
+  // ---------------------------------------------------------------BORRAR APORTE
+  borrarAporte(_i) {
+    this.aportes[_i].element.remove();
+    this.aportes.splice(_i, 1);
   }
 }
 
@@ -107,8 +118,10 @@ class Evento_Agregar extends Hueso {
 
     this.tipo = _tipo;
 
-    this.element.mousePressed(this.mouseSensor.bind(this, true));
-    this.element.mouseClicked(this.mouseSensor.bind(this, false));
+    this.mouseState = false;
+    // this.element.mousePressed(this.mouseSensor.bind(this, true));
+    // document.addEventListener("mouseup", this.mouseSensor.bind(this, false));
+    this.element.mouseClicked(this.clickSensor.bind(this));
 
     this.icon = new Hueso(createDiv("+"), "agregar_plus", this);
 
@@ -116,32 +129,39 @@ class Evento_Agregar extends Hueso {
   }
 
   // ---------------------------------------------------------------INTERACCIÓN
-  mouseSensor(_b) {
-    if (_b) {
-      // Avisar que el cursor está sobre el botón
-      // para que no haga drag y se pulse a la vez
-      this.element.elt.dispatchEvent(
-        new CustomEvent("inputAbierto", {
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-    } else {
-      // Avisar que se agregue algo, a quien corresponda
-      this.element.elt.dispatchEvent(
-        new CustomEvent("agregar_" + this.tipo, {
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
+  clickSensor() {
+    // Avisar que se agregue algo, a quien corresponda
+    this.element.elt.dispatchEvent(
+      new CustomEvent("agregar_" + this.tipo, {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
 
-      // Avisar que ya se puede draggear
-      this.element.elt.dispatchEvent(
-        new CustomEvent("inputCerrado", {
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-    }
+    // this.mouseSensor(false);
   }
+  // mouseSensor(_b) {
+  //   if (this.mouseState) {
+  //     this.mouseState = _b;
+
+  //     if (this.mouseState) {
+  //       // Avisar que el cursor está sobre el botón
+  //       // para que no haga drag y se pulse a la vez
+  //       this.element.elt.dispatchEvent(
+  //         new CustomEvent("inputAbierto", {
+  //           bubbles: true,
+  //           cancelable: true,
+  //         }),
+  //       );
+  //     } else {
+  //       // Avisar que ya se puede draggear
+  //       this.element.elt.dispatchEvent(
+  //         new CustomEvent("inputCerrado", {
+  //           bubbles: true,
+  //           cancelable: true,
+  //         }),
+  //       );
+  //     }
+  //   }
+  // }
 }

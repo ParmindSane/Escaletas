@@ -39,11 +39,6 @@ class Hueso {
     }
   }
 
-  // ---------------------------------------------------------------BORRAR DE LA EXISTENCIA
-  borrar() {
-    this.element.remove();
-  }
-
   // ---------------------------------------------------------------ATAJO PARA HACER OCULTABLE
   // Me daba paja copiarlo y pegarlo cada vez xd
   hacerOcultable() {
