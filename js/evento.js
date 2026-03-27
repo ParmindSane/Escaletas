@@ -58,8 +58,11 @@ class HuesoEvento extends HuesoFlotante {
     // ---------------------------------------------------------------NODO PRINCIPAL
     this.mainDiv = new HuesoFlotante(createDiv(), "eventoMain", this);
 
+    // Tags
+    this.tagsDiv = new Evento_Tags("evento", this.mainDiv);
+
     // Lugar
-    this.lugarDiv = new Hueso(createDiv(), "perfil", this.mainDiv);
+    this.lugarDiv = new Hueso(createDiv(), "perfil noContainer", this.mainDiv);
 
     // Resumen
     this.resumenDiv = new HuesoTexto(
@@ -69,9 +72,15 @@ class HuesoEvento extends HuesoFlotante {
       true,
     );
 
-    // Desfasar el contenido para mantenerlo centrado
-    this.mainDiv.actualizarTam();
-    this.mainDiv.desfasar(-(this.lugarDiv.tamX + this.resumenDiv.tamX / 2), 0);
+    // // Desfasar el contenido para mantenerlo centrado
+    // this.mainDiv.actualizarTam();
+    // this.mainDiv.desfasar(
+    //   -(this.tagsDiv.tamX + this.lugarDiv.tamX + this.resumenDiv.tamX / 2),
+    //   0,
+    // );
+
+    this.centrar();
+    this.element.elt.addEventListener("agregar", this.centrar.bind(this));
 
     // Aportes
     this.aportesDiv = new Evento_Aportes(this.mainDiv);
@@ -196,7 +205,7 @@ class HuesoEvento extends HuesoFlotante {
       // Detecta si el click fue adentro o afuera del Evento
       let laTieneAdentro = this.contieneTarget(_e);
 
-      // Lo descarta si fue igual que el anterior, así evitamos redundancias
+      // Lo descarta si fue igual que el anterior, así no ejecuta lo demás al pedo
       if (laTieneAdentro != this.seleccionado) {
         let t = _e.target;
 
@@ -205,7 +214,7 @@ class HuesoEvento extends HuesoFlotante {
         if (document.getElementById("summonableMenus").contains(t)) {
           // ...y si este Evento es el objetivo del botón pulsado,
           // lo toma como acción interna y no anula la selección
-          // Recorre varios objetos por si justo se disparó en un hijo que no lo conoce
+          // Recorre varios objetos por si justo se disparó en un hijo que no sabe
           let esteEsElPosta = false;
           let meFuiDeMambo = false;
           for (
@@ -235,16 +244,31 @@ class HuesoEvento extends HuesoFlotante {
             o.classList.add("oculto");
           }
         });
+
+        // Disimula el cambio de posición
+        this.centrar();
       }
     }
   }
 
-  // ---------------------------------------------------------------AGREGAR APORTE
-  nuevoAporte() {}
+  // ---------------------------------------------------------------MANTENER CENTRADO
+  centrar() {
+    // Desfasar el contenido para mantenerlo centrado
+    // Más que nada por el tagsDiv, que mueve todo lo demás cuando se muestra y se oculta
+    // ¿Por qué puse un objeto así a la izquierda del todo? :/
+    this.mainDiv.desfasar(
+      -(
+        this.tagsDiv.actualizarTam().x +
+        this.lugarDiv.actualizarTam().x +
+        this.resumenDiv.actualizarTam().x / 2
+      ),
+      0,
+    );
+  }
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL
   contextTest1(_e) {
-    console.log(this);
+    console.log(_e.target);
   }
 }
 
@@ -258,6 +282,10 @@ document.addEventListener("crearEvento", function (_e) {
 document.addEventListener("borrarEvento", function (_e) {
   let h = _e.target.hueso;
 
+  // Eliminar eventos globales asociados
+  document.removeEventListener("mousemove", h.mouseMoved.bind(h));
+  document.removeEventListener("mouseup", h.mouseUp.bind(h));
+
   // Eliminar el Hueso del array
   let i = eventos.indexOf(h);
   eventos.splice(i, 1);
@@ -265,6 +293,6 @@ document.addEventListener("borrarEvento", function (_e) {
   // Borrar el HTML
   h.element.remove();
 
-  // El objeto sólo se borra y ya no tiene referencias en ejecución,
+  // El objeto sólo se borra si ya no tiene referencias en ejecución,
   // así que recemos para que esto sea suficiente (?
 });

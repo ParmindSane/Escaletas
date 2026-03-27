@@ -39,17 +39,6 @@ class Hueso {
     }
   }
 
-  // ---------------------------------------------------------------ATAJO PARA HACER OCULTABLE
-  // Me daba paja copiarlo y pegarlo cada vez xd
-  hacerOcultable() {
-    this.element.elt.dispatchEvent(
-      new CustomEvent("holaSoyOcultable", {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-  }
-
   // ---------------------------------------------------------------DETECTAR SI EL EVENTO SE DISPARÓ DENTRO DEL OBJETO
   contieneTarget(_e) {
     let t = _e.target;
@@ -128,7 +117,7 @@ class HuesoFlotante extends Hueso {
     this.desfasar(false, false);
   }
 
-  // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HTML RESPECTO AL HUESO
+  // ---------------------------------------------------------------MOVER HTML
   desfasar(_x, _y) {
     // Si no se da un parámetro de desfase, se queda como estaba
     // (para no tener que escribir hueso.desfase cada vez)
@@ -139,7 +128,7 @@ class HuesoFlotante extends Hueso {
       this.desfaseY = _y;
     }
 
-    // Mover el elemento sin afectar al Hueso
+    // Mueve el elemento sin afectar al Hueso
     this.element.position(this.posX + this.desfaseX, this.posY + this.desfaseY);
   }
 }
@@ -160,18 +149,20 @@ class HuesoTexto extends Hueso {
     // Objeto de texto editable
     this.eEditable = createElement("textarea", this.dato);
     this.eEditable.parent(this.element);
+    this.eEditable.addClass("noContext");
 
     // ¿Arranca editando o mostrando?
     this.editando = _startOpen;
     if (!this.editando) {
       this.eEditable.addClass("oculto");
     } else {
-      // this.eInherte.addClass("oculto");
+      this.eInherte.addClass("oculto");
 
       // El textarea arranca abierto y con el texto seleccionado
       this.editar(true);
       this.eEditable.elt.setSelectionRange(0, this.dato.length);
     }
+    this.actualizarTam();
 
     // Se entra a editar con doble click
     // y se sale usando el mouse fuera del objeto
@@ -182,7 +173,12 @@ class HuesoTexto extends Hueso {
     // Actualizar el tamaño de la caja a medida que se escribe
     this.eEditable.input(this.inputTam.bind(this));
 
-    this.actualizarTam();
+    // Entrar al modo edición desde el menú contextual
+    this.newContextOption(
+      "editarHuesoTexto",
+      "Editar texto",
+      this.editar.bind(this),
+    );
   }
 
   // ---------------------------------------------------------------ENTRAR EN MODO EDICIÓN
@@ -220,8 +216,8 @@ class HuesoTexto extends Hueso {
       this.eInherte.html(this.dato);
 
       // Oculta el editable y muestra el estático
-      this.eEditable.addClass("oculto");
       this.eInherte.removeClass("oculto");
+      this.eEditable.addClass("oculto");
 
       // Por si el nuevo texto cambió el tamaño de la caja
       this.actualizarTam();
@@ -260,6 +256,7 @@ class HuesoTexto extends Hueso {
     if (py > this.eEditable.elt.scrollHeight) {
       this.eEditable.elt.style.height = py + "px";
     }
+    this.actualizarTam();
   }
 }
 
@@ -277,12 +274,14 @@ class HuesoIcon extends Hueso {
     this.cambiar();
 
     // Si es un logo que el usuario puede cambiar,
-    // invoca las opciones al hacerle doble click
+    // invoca las opciones para cambiarlo
     this.editable = _editable;
     if (this.editable) {
+      // Llama el menú al hacerle doble click
       this.element.doubleClicked(this.pedirCambio.bind(this));
       this.element.elt.addEventListener("iconChange", this.cambiar.bind(this));
 
+      // O con un botón del menú contextual
       this.newContextOption(
         "pedirCambio",
         "Cambiar ícono",
@@ -293,9 +292,9 @@ class HuesoIcon extends Hueso {
 
   // ---------------------------------------------------------------DESPLEGAR OPCIONES
   pedirCambio(_e) {
-    // Si la llamada fue por menú contextual,
+    console.log("Invocando IconMenu");
+    // Si la llamada fue indirecta (por menú contextual, etc.)
     // tiene que buscar el evento de mouse original en detail
-    // EN TEORÍA, PORQUE AHORA MISMO NO FUNCA Y NO ENTIENDO EL MOTIVO >:/
     let e = _e;
     if (!e.clientX) {
       e = _e.detail.original_e;
@@ -318,11 +317,7 @@ class HuesoIcon extends Hueso {
   // ---------------------------------------------------------------CAMBIAR ICONITO
   cambiar(_e) {
     // Si no viene ningún parámetro, crea un ícono nuevito de cero.
-    // Si hay parámetro, debería ser el evento que viene del menú,
-    // así que le asigna directamente el ícono para no tener que crearlo otra vez.
-    if (_e) {
-      this.content = _e.detail.icon;
-    } else {
+    if (!_e) {
       // Traté de generarlo como p5.Element
       // pero cargaba mal la ruta y me dio paja xd
       this.content =
@@ -333,6 +328,10 @@ class HuesoIcon extends Hueso {
         this.icon +
         '"></use>' +
         "</svg>";
+    } else {
+      // Si hay parámetro, debería ser el evento que viene del menú,
+      // así que toma el ícono directamente de ahí para no crearlo otra vez.
+      this.content = _e.detail.icon;
     }
 
     this.element.html(this.content);
@@ -346,16 +345,18 @@ class HuesoSummonMenu extends HuesoFlotante {
     super(_select);
 
     this.invocado = false;
+    this.justInvocado = false;
 
     //cerrar menú con la siguiente acción del mouse
     document.addEventListener("mousedown", this.mouseSensor.bind(this));
     document.addEventListener("wheel", this.mouseSensor.bind(this));
-    document.addEventListener("click", this.ocultar.bind(this, false));
+    document.addEventListener("click", this.clickSensor.bind(this));
   }
 
   // ---------------------------------------------------------------INVOCAR
   summonAt(_x, _y) {
     this.invocado = true;
+    this.justInvocado = true;
 
     // Mostrar el menú
     this.element.removeClass("oculto");
@@ -396,10 +397,28 @@ class HuesoSummonMenu extends HuesoFlotante {
   }
 
   // ---------------------------------------------------------------OCULTAR POR CLICK EXTERNO
+  // Oculta el menú si se usa el mouse fuera de él mientras está invocado
   mouseSensor(_e) {
-    // Oculta el menú si se usa el mouse fuera de él mientras está invocado
     if (this.invocado) {
+      // Registra que ya hubo una acción del mouse desde la última invocación
+      this.justInvocado = false;
+
       if (!this.contieneTarget(_e)) {
+        this.ocultar(false);
+      }
+    }
+  }
+  // A menos que sea un menú llamando a otro
+  // Y sólo si no viene de un botón, para que no se pisen los eventos
+  clickSensor(_e) {
+    console.log("Ocultando IconMenu");
+    if (this.invocado) {
+      console.log(_e);
+      let fueEnUnMenu = document
+        .getElementById("summonableMenus")
+        .contains(_e.target);
+      let fuiYoBarry = this.contieneTarget(_e);
+      if ((!fueEnUnMenu || fuiYoBarry) && !this.justInvocado) {
         this.ocultar(false);
       }
     }

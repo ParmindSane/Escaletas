@@ -29,7 +29,12 @@ class Evento_Tension extends Hueso {
     this.cambiarNivel();
 
     // Avisar que este objeto sólo se muestra al seleccionar el Evento
-    this.slider.hacerOcultable();
+    this.slider.element.elt.dispatchEvent(
+      new CustomEvent("holaSoyOcultable", {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
   }
 
   // ---------------------------------------------------------------DETECTAR USO DEL SLIDER
@@ -78,7 +83,8 @@ class Evento_Aportes extends Hueso {
     // Botón para agregar aportes
     this.agregarButt = new Evento_Agregar("aporte", this);
     this.element.elt.addEventListener(
-      "agregar_aporte",
+      // "agregar_aporte",
+      "agregar",
       this.nuevoAporte.bind(this, true),
     );
 
@@ -96,6 +102,7 @@ class Evento_Aportes extends Hueso {
 
     this.aportes.push(a);
 
+    // Opción de click derecho para borrar
     a.newContextOption(
       "borrarAporte",
       "Borrar aporte",
@@ -110,6 +117,37 @@ class Evento_Aportes extends Hueso {
   }
 }
 
+// ----------------------------------------------------------------------------CLASE TAGS
+class Evento_Tags extends Hueso {
+  // ---------------------------------------------------------------CONSTRUCTOR
+  constructor(_tipo, _padre) {
+    super(createDiv(), "tags tags_" + _tipo, _padre);
+
+    this.tipo = _tipo;
+
+    // Div para acumular las tags
+    this.tags = [];
+    this.innerDiv = new Hueso(createDiv(), "tagsInner", this);
+
+    // Botón para agregar tag
+    this.agregarButt = new Evento_Agregar("tag", this);
+    this.element.elt.addEventListener("agregar", this.nuevaTag.bind(this));
+  }
+
+  // ---------------------------------------------------------------AGREGAR NUEVA TAG
+  nuevaTag(_e) {
+    // Crea primero un div para que tenga el marquito de noContainer
+    let iconDiv = new Hueso(createDiv(), "iconito, noContainer", this.innerDiv);
+
+    // Crea un nuevo ícono y lo abre con el IconMenu ya desplegado
+    let nuevoIcon = new HuesoIcon("test", "happy", iconDiv, true);
+    nuevoIcon.pedirCambio(_e);
+
+    // La deja a mano en un array
+    this.tags.push(nuevoIcon);
+  }
+}
+
 // ----------------------------------------------------------------------------CLASE AGREGAR
 class Evento_Agregar extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
@@ -118,50 +156,34 @@ class Evento_Agregar extends Hueso {
 
     this.tipo = _tipo;
 
-    this.mouseState = false;
-    // this.element.mousePressed(this.mouseSensor.bind(this, true));
-    // document.addEventListener("mouseup", this.mouseSensor.bind(this, false));
+    // Hace sus cosas al hacerle click
     this.element.mouseClicked(this.clickSensor.bind(this));
 
+    // Le agrega el dibujito
     this.icon = new Hueso(createDiv("+"), "agregar_plus", this);
 
-    this.hacerOcultable();
-  }
-
-  // ---------------------------------------------------------------INTERACCIÓN
-  clickSensor() {
-    // Avisar que se agregue algo, a quien corresponda
+    // Avisar que este objeto sólo se muestra al seleccionar el Evento
     this.element.elt.dispatchEvent(
-      new CustomEvent("agregar_" + this.tipo, {
+      new CustomEvent("holaSoyOcultable", {
         bubbles: true,
         cancelable: true,
       }),
     );
-
-    // this.mouseSensor(false);
   }
-  // mouseSensor(_b) {
-  //   if (this.mouseState) {
-  //     this.mouseState = _b;
 
-  //     if (this.mouseState) {
-  //       // Avisar que el cursor está sobre el botón
-  //       // para que no haga drag y se pulse a la vez
-  //       this.element.elt.dispatchEvent(
-  //         new CustomEvent("inputAbierto", {
-  //           bubbles: true,
-  //           cancelable: true,
-  //         }),
-  //       );
-  //     } else {
-  //       // Avisar que ya se puede draggear
-  //       this.element.elt.dispatchEvent(
-  //         new CustomEvent("inputCerrado", {
-  //           bubbles: true,
-  //           cancelable: true,
-  //         }),
-  //       );
-  //     }
-  //   }
-  // }
+  // ---------------------------------------------------------------INTERACCIÓN
+  clickSensor(_e) {
+    // Avisar que se agregue algo, a quien corresponda
+    this.element.elt.dispatchEvent(
+      // new CustomEvent("agregar_" + this.tipo, {
+      new CustomEvent("agregar", {
+        detail: {
+          tipo: this.tipo,
+          original_e: _e,
+        },
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
 }

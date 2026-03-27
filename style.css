@@ -53,12 +53,21 @@ textarea:focus {
 }
 
 /* ---------------------------------------------------------------BOTÓN AGREGAR */
+.agregar{
+  background-color: rgba(211, 211, 211, 0.50) !important;
+}
+.agregar:hover{
+    background-color: rgba(211, 211, 211, 0.75) !important;
+
+}
 .agregar,
 .agregar * {
   display: flex;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
+
+  cursor: pointer;
 }
 .agregar * {
   width: 28px !important;
@@ -136,6 +145,13 @@ textarea:focus {
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+}
+
+.tagCol {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
 }
 
 .perfil {

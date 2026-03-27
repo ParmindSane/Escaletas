@@ -71,8 +71,6 @@ class ContextMenu extends HuesoSummonMenu {
 
       // Si encontró al menos una opción válida, invoca un nuevo menú
       if (this.context.length > 0) {
-        // this.invocado = true;
-
         // Crea una sección de menú por cada contexto en la familia
         for (let c of this.context) {
           let div = createDiv();
@@ -162,7 +160,7 @@ class IconMenu extends HuesoSummonMenu {
 
   // ---------------------------------------------------------------INVOCAR
   summon(_e) {
-    let h = _e.target.hueso;
+    let h = _e.detail.target;
 
     // Muestra el div que corresponde y oculta los demás
     // según el tipo de ícono que se pide
@@ -177,7 +175,11 @@ class IconMenu extends HuesoSummonMenu {
           b.elt.objetivo = h;
           b.mouseClicked(false);
           b.mouseClicked(
-            this.ejecutar.bind(this, _e.target, this.optionIcons[h.tipo][i]),
+            this.ejecutar.bind(
+              this,
+              h.element.elt,
+              this.optionIcons[h.tipo][i],
+            ),
           );
         }
       } else {
