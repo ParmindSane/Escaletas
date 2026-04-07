@@ -22,6 +22,7 @@ class HuesoEvento extends HuesoFlotante {
     this.inputAbierto = true;
     this.inputSensor = function (_b) {
       this.inputAbierto = _b;
+      this.centrar();
     };
     this.element.elt.addEventListener(
       "inputAbierto",
@@ -34,12 +35,9 @@ class HuesoEvento extends HuesoFlotante {
 
     // Contacto directo con los objetos que sólo se muestran al seleccionar el Evento
     this.ocultables = [];
-    let unOcultable = function (_e) {
-      this.ocultables.push(_e.target);
-    };
     this.element.elt.addEventListener(
       "holaSoyOcultable",
-      unOcultable.bind(this),
+      this.guardarOcultable.bind(this),
     );
 
     // Datos de la escaleta
@@ -52,11 +50,19 @@ class HuesoEvento extends HuesoFlotante {
       tension: 0,
       tags: [],
       personajes: [],
-      aportes: [], //ARREGLO DE DOS DIMENSIONES: [PERSONAJE][DATO] (el personajes.length sería el general)
+      aportes: [], //[NODO][DATO]
     };
 
     // ---------------------------------------------------------------NODO PRINCIPAL
-    this.mainDiv = new HuesoFlotante(createDiv(), "eventoMain", this);
+    this.nodos = [];
+
+    this.mainDiv = new HuesoFlotante(
+      createDiv(),
+      "eventoMain eventoNodo",
+      this,
+    );
+    this.nodos[0] = this.mainDiv;
+    this.nodoActivo = this.mainDiv;
 
     // Tags
     this.tagsDiv = new Evento_Tags("evento", this.mainDiv);
@@ -72,30 +78,23 @@ class HuesoEvento extends HuesoFlotante {
       true,
     );
 
-    // // Desfasar el contenido para mantenerlo centrado
-    // this.mainDiv.actualizarTam();
-    // this.mainDiv.desfasar(
-    //   -(this.tagsDiv.tamX + this.lugarDiv.tamX + this.resumenDiv.tamX / 2),
-    //   0,
-    // );
-
-    this.centrar();
-    this.element.elt.addEventListener("agregar", this.centrar.bind(this));
-
     // Aportes
     this.aportesDiv = new Evento_Aportes(this.mainDiv);
 
-    // Acomodar posición cuando cambia su contenido
-    this.mainDiv.ajustarTam = function () {
-      // this.mainDiv.desfasar(false, this.mainDiv.actualizarTam().y);
-    };
-    this.mainDiv.element.elt.addEventListener(
-      "inputCerrado",
-      this.mainDiv.ajustarTam.bind(this),
+    // Botón de agregar nodo
+    this.agregarPersonaje = new Evento_Conector(this);
+    this.personajesDiv = new Hueso(createDiv(), "eventoPersonajes", this);
+
+    // Acomodar las posiciones de las cosas cuando se agrega o borra algo
+    this.centrar();
+    this.element.elt.addEventListener("borrar", this.centrar.bind(this));
+    this.element.elt.addEventListener(
+      "agregar",
+      this.nuevoPersonaje.bind(this),
     );
 
     // ---------------------------------------------------------------CABEZA DEL NODO PRINCIPAL
-    this.headDiv = new HuesoFlotante(createDiv(), "eventoHead", this);
+    this.headDiv = new HuesoFlotante(createDiv(), "eventoHead", this.mainDiv);
     this.headDiv.headInnerDiv = new Hueso(
       createDiv(),
       "eventoInnerHead",
@@ -137,6 +136,7 @@ class HuesoEvento extends HuesoFlotante {
       this.headDiv.ajustarTam.bind(this),
     );
 
+    // ---------------------------------------------------------------CONECTORES
     // Puntos para conectar con las otras escenas de la trama
     this.preTramaLink;
     this.posTramaLink;
@@ -201,69 +201,155 @@ class HuesoEvento extends HuesoFlotante {
     this.dragClick = false;
 
     // ---------------------------------------------------------------SELECCIONAR EVENTO
-    if (!this.dragged) {
+    if (!this.dragged && _e.button === 0) {
       // Detecta si el click fue adentro o afuera del Evento
       let laTieneAdentro = this.contieneTarget(_e);
 
-      // Lo descarta si fue igual que el anterior, así no ejecuta lo demás al pedo
-      if (laTieneAdentro != this.seleccionado) {
-        let t = _e.target;
+      // // Lo descarta si fue igual que el anterior, así no ejecuta lo demás al pedo
+      // if (laTieneAdentro != this.seleccionado) {
+      let t = _e.target;
 
-        // Si la acción del mouse fue en un menú contextual...
-        let fueMiContextMenu = false;
+      // Si la acción del mouse fue en un menú contextual...
+      let fueMiContextMenu = false;
+      if (!laTieneAdentro) {
         if (document.getElementById("summonableMenus").contains(t)) {
           // ...y si este Evento es el objetivo del botón pulsado,
           // lo toma como acción interna y no anula la selección
           // Recorre varios objetos por si justo se disparó en un hijo que no sabe
-          let esteEsElPosta = false;
+          let esteEsElQueSabe = false;
           let meFuiDeMambo = false;
           for (
             let i = t;
-            !esteEsElPosta && !meFuiDeMambo;
+            !esteEsElQueSabe && !meFuiDeMambo;
             i = i.parentElement
           ) {
             meFuiDeMambo =
               i.classList.contains("noContext") || !i.parentElement;
-            esteEsElPosta = i.objetivo;
-            if (esteEsElPosta) {
-              fueMiContextMenu = this.element.elt.contains(
-                i.objetivo.element.elt,
-              );
+            esteEsElQueSabe = i.objetivo;
+            if (esteEsElQueSabe) {
+              t = i.objetivo.element.elt;
+              fueMiContextMenu = this.element.elt.contains(t);
             }
           }
         }
+      }
 
-        // Ahora sí: ¿está seleccionado o no?
-        this.seleccionado = laTieneAdentro || fueMiContextMenu;
+      // Ahora sí: ¿está seleccionado o no?
+      let meSeleccionaron = laTieneAdentro || fueMiContextMenu;
 
-        // Muestra/oculta las opciones adicionales
-        this.ocultables.forEach((o) => {
-          if (this.seleccionado) {
-            o.classList.remove("oculto");
-          } else {
+      // Si no está seleccionado, oculta todos los ocultables
+      if (!meSeleccionaron) {
+        if (meSeleccionaron != this.seleccionado) {
+          this.nodoActivo = false;
+
+          for (let o of this.ocultables) {
             o.classList.add("oculto");
           }
-        });
+        }
+      } else {
+        // Si está seleccionado, se fija en cuál nodo fue
+        let nodoClickeado = false;
+        for (let n of this.nodos) {
+          if (n.contieneTarget(t)) {
+            nodoClickeado = n;
+          }
+        }
 
-        // Disimula el cambio de posición
-        this.centrar();
+        // Y muestra los ocultables sólo en ese nodo
+        // Además del botón de agregar personaje, que no depende de ninguno
+        if (nodoClickeado != this.nodoActivo) {
+          for (let o of this.ocultables) {
+            // Si el clic fue para agregar un nuevo nodo, oculta todos
+            // (el nuevo se crea después de este evento)
+            if (
+              (nodoClickeado ? nodoClickeado.contieneTarget(o) : false) ||
+              this.agregarPersonaje.contieneTarget(o)
+            ) {
+              o.classList.remove("oculto");
+            } else {
+              o.classList.add("oculto");
+            }
+          }
+
+          this.nodoActivo = nodoClickeado;
+        }
       }
+
+      this.seleccionado = meSeleccionaron;
+
+      // // Muestra/oculta las opciones adicionales
+      // this.ocultables.forEach((o) => {
+      //   if (this.seleccionado) {
+      //     o.classList.remove("oculto");
+      //   } else {
+      //     o.classList.add("oculto");
+      //   }
+      // });
+
+      // Acomoda posiciones que puedan cambiar
+      this.centrar();
     }
   }
+  // }
+
+  // ---------------------------------------------------------------GUARDAR OCULTABLES
+  guardarOcultable = function (_e) {
+    let t = _e.target;
+
+    // let seFue = false;
+    // for(let i=t; !seFue; i=t.parentElement){
+
+    // }
+
+    this.ocultables.push(t);
+  };
 
   // ---------------------------------------------------------------MANTENER CENTRADO
   centrar() {
     // Desfasar el contenido para mantenerlo centrado
     // Más que nada por el tagsDiv, que mueve todo lo demás cuando se muestra y se oculta
     // ¿Por qué puse un objeto así a la izquierda del todo? :/
-    this.mainDiv.desfasar(
-      -(
-        this.tagsDiv.actualizarTam().x +
-        this.lugarDiv.actualizarTam().x +
-        this.resumenDiv.actualizarTam().x / 2
-      ),
-      0,
-    );
+    if (this.resumenDiv && this.lugarDiv && this.tagsDiv) {
+      this.mainDiv.desfasar(
+        -(
+          this.tagsDiv.actualizarTam().x +
+          this.lugarDiv.actualizarTam().x +
+          this.resumenDiv.actualizarTam().x / 2
+        ),
+        0,
+      );
+
+      // También mueve todo lo que hay por abajo del nodo main
+      let alturaTotal = this.mainDiv.actualizarTam().y;
+      if (this.nodos.length > 1) {
+        for (let i = 1; i < this.nodos.length; i++) {
+          let p = this.nodos[i];
+
+          alturaTotal += this.agregarPersonaje.tamY;
+          p.centrar();
+          p.moverA(0, alturaTotal);
+
+          alturaTotal += p.actualizarTam().y;
+        }
+      }
+      this.agregarPersonaje.moverA(0, +alturaTotal);
+    }
+  }
+
+  // ---------------------------------------------------------------AGREGAR PERSONAJE
+  nuevoPersonaje(_e) {
+    if (_e.detail.tipo === "participante") {
+      // Crear nuevo nodo de personaje
+      let i = this.nodos.length;
+      this.nodos[i] = new Evento_Personaje(i, this.personajesDiv);
+
+      // Ubicar nodo abajo del todo
+      let py = this.agregarPersonaje.posY + this.agregarPersonaje.tamY;
+      this.nodos[i].moverA(0, py);
+    }
+
+    // Actualizar posición del botoncito de agregar
+    this.centrar();
   }
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL

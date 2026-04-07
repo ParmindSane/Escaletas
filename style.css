@@ -14,7 +14,7 @@ textarea {
 }
 textarea:focus {
   position: relative;
-  z-index: 100;
+  z-index: 90;
 }
 
 /* ----------------------------------------------------------------------------CLASES SECUNDARIAS */
@@ -53,12 +53,13 @@ textarea:focus {
 }
 
 /* ---------------------------------------------------------------BOTÓN AGREGAR */
-.agregar{
-  background-color: rgba(211, 211, 211, 0.50) !important;
-}
-.agregar:hover{
-    background-color: rgba(211, 211, 211, 0.75) !important;
+.agregar {
+  z-index: 80;
 
+  background-color: rgba(211, 211, 211, 0.5) !important;
+}
+.agregar:hover {
+  background-color: rgba(211, 211, 211, 0.75) !important;
 }
 .agregar,
 .agregar * {
@@ -84,7 +85,7 @@ textarea:focus {
 /* ---------------------------------------------------------------MENÚ CONTEXTUAL */
 #contextMenu,
 #iconMenu {
-  z-index: 10;
+  z-index: 95;
 
   /* max-height: 200px;
   overflow: auto; */
@@ -128,7 +129,8 @@ textarea:focus {
 
 /* ---------------------------------------------------------------EVENTOS */
 /* Nodo principal */
-.eventoMain {
+.eventoMain,
+.eventoPersonaje {
   height: auto;
 
   display: flex;
@@ -175,9 +177,6 @@ textarea:focus {
   gap: -1px;
 }
 .aporte {
-  min-width: 50px;
-  min-height: 50px;
-
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -221,4 +220,12 @@ textarea:focus {
   background-color: lightgray;
 
   text-align: center;
+}
+
+/* Nodos de personaje */
+.conectaNodos {
+  width: 16px;
+  height: 48px;
+
+  background-color: rgba(0, 255, 0);
 }
