@@ -3,7 +3,7 @@ class HuesoEvento extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_x, _y, _padre) {
     super(createDiv(), "evento", _padre);
-    this.moverA(_x, _y);
+    this.mover(_x, _y);
 
     this.vistaDetallada = true;
     this.seleccionado = true;
@@ -35,9 +35,12 @@ class HuesoEvento extends HuesoFlotante {
 
     // Contacto directo con los objetos que sólo se muestran al seleccionar el Evento
     this.ocultables = [];
+    let guardarOcultable = function (_e) {
+      this.ocultables.push(_e.target);
+    };
     this.element.elt.addEventListener(
       "holaSoyOcultable",
-      this.guardarOcultable.bind(this),
+      guardarOcultable.bind(this),
     );
 
     // Datos de la escaleta
@@ -50,7 +53,7 @@ class HuesoEvento extends HuesoFlotante {
       tension: 0,
       tags: [],
       personajes: [],
-      aportes: [], //[NODO][DATO]
+      aportes: [], //[NODO][APORTE]
     };
 
     // ---------------------------------------------------------------NODO PRINCIPAL
@@ -136,6 +139,10 @@ class HuesoEvento extends HuesoFlotante {
       this.headDiv.ajustarTam.bind(this),
     );
 
+    // Acomodar color a la trama en la que está
+    this.color;
+    this.cambiarColor(this.padre.color);
+
     // ---------------------------------------------------------------CONECTORES
     // Puntos para conectar con las otras escenas de la trama
     this.preTramaLink;
@@ -147,6 +154,7 @@ class HuesoEvento extends HuesoFlotante {
       "¿Quién soy?",
       this.contextTest1.bind(this),
     );
+    this.newContextOption("tramaCambiarColor", "Cambiar color de trama");
     this.newContextOption("borrarEvento", "Borrar evento");
   }
 
@@ -173,9 +181,28 @@ class HuesoEvento extends HuesoFlotante {
   mouseMoved(_e) {
     // Cuando ya empezó a draggear
     if (this.dragClick || this.dragging) {
+      // Avisar al resto del documento
+      if (this.dragClick) {
+        this.element.elt.dispatchEvent(
+          new CustomEvent("dragEventoStart", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      } else {
+        this.element.elt.dispatchEvent(
+          new CustomEvent("dragEventoMoved", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      }
+
+      // Para identificar el primer frame del drag
       this.dragging = true;
       this.dragClick = false;
 
+      // Estilo del cursor (obviamente)
       this.element.style("cursor", "grabbing");
       this.element.style("userSelect", "none");
 
@@ -186,7 +213,10 @@ class HuesoEvento extends HuesoFlotante {
       this.dragData.py = mouseY;
 
       // Actualizar posición
-      this.moverA(this.posX + this.dragData.mx, this.posY + this.dragData.my);
+      this.mover(this.posX + this.dragData.mx, this.posY + this.dragData.my);
+
+      // Actualizar conectores de trama
+      this.getConectores();
     }
   }
   mouseUp(_e) {
@@ -194,6 +224,14 @@ class HuesoEvento extends HuesoFlotante {
     if (this.dragging) {
       this.element.style("cursor", "default");
       this.dragged = true;
+
+      // Avisar al resto del documento
+      this.element.elt.dispatchEvent(
+        new CustomEvent("dragEventoEnd", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
     } else {
       this.dragged = false;
     }
@@ -245,6 +283,9 @@ class HuesoEvento extends HuesoFlotante {
           for (let o of this.ocultables) {
             o.classList.add("oculto");
           }
+
+          // Y se des-destaca
+          this.element.style("z-index", "5");
         }
       } else {
         // Si está seleccionado, se fija en cuál nodo fue
@@ -273,6 +314,9 @@ class HuesoEvento extends HuesoFlotante {
 
           this.nodoActivo = nodoClickeado;
         }
+
+        // También se pone un poquito por encima de los demás Eventos
+        this.element.style("z-index", "6");
       }
 
       this.seleccionado = meSeleccionaron;
@@ -290,19 +334,6 @@ class HuesoEvento extends HuesoFlotante {
       this.centrar();
     }
   }
-  // }
-
-  // ---------------------------------------------------------------GUARDAR OCULTABLES
-  guardarOcultable = function (_e) {
-    let t = _e.target;
-
-    // let seFue = false;
-    // for(let i=t; !seFue; i=t.parentElement){
-
-    // }
-
-    this.ocultables.push(t);
-  };
 
   // ---------------------------------------------------------------MANTENER CENTRADO
   centrar() {
@@ -327,12 +358,12 @@ class HuesoEvento extends HuesoFlotante {
 
           alturaTotal += this.agregarPersonaje.tamY;
           p.centrar();
-          p.moverA(0, alturaTotal);
+          p.mover(0, alturaTotal);
 
           alturaTotal += p.actualizarTam().y;
         }
       }
-      this.agregarPersonaje.moverA(0, +alturaTotal);
+      this.agregarPersonaje.mover(0, +alturaTotal);
     }
   }
 
@@ -345,11 +376,56 @@ class HuesoEvento extends HuesoFlotante {
 
       // Ubicar nodo abajo del todo
       let py = this.agregarPersonaje.posY + this.agregarPersonaje.tamY;
-      this.nodos[i].moverA(0, py);
+      this.nodos[i].mover(0, py);
     }
+
+    // Actualiza el color para que el nuevo nodo también lo tenga
+    this.cambiarColor(this.color);
 
     // Actualizar posición del botoncito de agregar
     this.centrar();
+  }
+
+  // ---------------------------------------------------------------ACTUALIZAR CONECTORES
+  getConectores() {
+    // Busca la caja del título
+    let box = this.titleDiv.element.elt.getBoundingClientRect();
+
+    // También busca el objeto canvas, por si hubo scroll
+    let canvas = document.getElementById("canvas");
+
+    // Calcula la posición absoluta del título
+    this.preTramaLink = {
+      x: box.left + canvas.scrollLeft,
+      y: box.top + canvas.scrollTop + box.height / 2,
+    };
+    this.posTramaLink = {
+      x: box.left + canvas.scrollLeft + box.width,
+      y: box.top + canvas.scrollTop + box.height / 2,
+    };
+
+    // Devuelve los puntos donde enganchan las líneas conectoras
+    let r = { pre: this.preTramaLink, pos: this.posTramaLink };
+    return r;
+  }
+
+  // ---------------------------------------------------------------CAMBIAR COLOR DE NODOS
+  cambiarColor(_c) {
+    this.color = _c;
+
+    // Le aplica el nuevo color a todos los nodos
+    for (let n of this.nodos) {
+      n.element.style("background-color", "rgb(" + this.color + ")");
+      if (this.nodos.indexOf(n) > 0) {
+        // Y a los conectores de los personajes
+        n.conector.element.style("background-color", "rgb(" + this.color + ")");
+      }
+    }
+    // Y al botón de agregar personaje
+    this.agregarPersonaje.element.style(
+      "background-color",
+      "rgb(" + this.color + ")",
+    );
   }
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL
@@ -357,28 +433,3 @@ class HuesoEvento extends HuesoFlotante {
     console.log(_e.target);
   }
 }
-
-// ----------------------------------------------------------------------------CREAR EVENTO NUEVO
-let eventos = [];
-document.addEventListener("crearEvento", function (_e) {
-  eventos.push(new HuesoEvento(round(mouseX), round(mouseY), huesoCanvas));
-});
-
-// ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
-document.addEventListener("borrarEvento", function (_e) {
-  let h = _e.target.hueso;
-
-  // Eliminar eventos globales asociados
-  document.removeEventListener("mousemove", h.mouseMoved.bind(h));
-  document.removeEventListener("mouseup", h.mouseUp.bind(h));
-
-  // Eliminar el Hueso del array
-  let i = eventos.indexOf(h);
-  eventos.splice(i, 1);
-
-  // Borrar el HTML
-  h.element.remove();
-
-  // El objeto sólo se borra si ya no tiene referencias en ejecución,
-  // así que recemos para que esto sea suficiente (?
-});

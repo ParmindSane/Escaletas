@@ -120,7 +120,7 @@ textarea:focus {
   background-color: white;
   border: 2px solid black;
 
-  /* user-select: none; */
+  text-align: left;
 }
 .menuOption:hover {
   background-color: hsl(0, 0%, 90%);
@@ -128,6 +128,17 @@ textarea:focus {
 }
 
 /* ---------------------------------------------------------------EVENTOS */
+/* Conectores de trama */
+.tramaConector {
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Evento general */
+.evento {
+  z-index: 5;
+}
+
 /* Nodo principal */
 .eventoMain,
 .eventoPersonaje {
@@ -137,8 +148,6 @@ textarea:focus {
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
-
-  background-color: rgba(0, 255, 0);
 }
 
 /* Cabeza del nodo principal */
@@ -171,6 +180,9 @@ textarea:focus {
   min-height: 100px;
 }
 
+.aportes {
+  position: relative;
+}
 .aportesInner {
   display: flex;
   flex-direction: column;
@@ -226,6 +238,4 @@ textarea:focus {
 .conectaNodos {
   width: 16px;
   height: 48px;
-
-  background-color: rgba(0, 255, 0);
 }

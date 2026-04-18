@@ -85,11 +85,11 @@ class HuesoFlotante extends Hueso {
     this.desfaseX = 0;
     this.desfaseY = 0;
 
-    this.moverA(0, 0);
+    this.mover(0, 0);
   }
 
   // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HUESO
-  moverA(_x, _y) {
+  mover(_x, _y) {
     // Guardar posición anterior
     this.pPosX = this.posX;
     this.pPosY = this.posY;
@@ -133,7 +133,7 @@ class HuesoFlotante extends Hueso {
       t = t.elt;
     }
 
-    this.moverA(t.offsetLeft, t.offsetTop);
+    this.mover(t.offsetLeft, t.offsetTop);
   }
 
   // ---------------------------------------------------------------MOVER HTML
@@ -403,7 +403,7 @@ class HuesoSummonMenu extends HuesoFlotante {
     }
 
     // Acomodar posición
-    this.moverA(cx, cy);
+    this.mover(cx, cy);
   }
 
   // ---------------------------------------------------------------OCULTAR

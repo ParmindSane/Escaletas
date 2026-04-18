@@ -17,7 +17,7 @@ class Evento_Tension extends Hueso {
       this,
     );
     this.slider.actualizarTam();
-    this.slider.moverA(this.tamX / 2, -this.tamY);
+    this.slider.mover(this.tamX / 2, -this.tamY);
 
     // Detectar cuando se empieza y termina de usar el slider
     // (para que no se pise con la acción de draggear el Evento)

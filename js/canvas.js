@@ -15,11 +15,23 @@ class HuesoCanvas extends Hueso {
     document.addEventListener("mousemove", this.mouseMoveHandler.bind(this));
     document.addEventListener("mouseup", this.mouseUpHandler.bind(this));
 
-    // Opciones para el menú contextual
-    this.newContextOption("crearEvento", "Nuevo evento");
+    // Tramas
+    this.tramas = [];
+    this.tramas.push(new HuesoTrama(this));
+
+    // Crear y borrar Evento
+    this.newContextOption(
+      "crearEvento",
+      "Nuevo evento",
+      this.crearEvento.bind(this),
+    );
+    // this.element.elt.addEventListener(
+    //   "borrarEvento",
+    //   this.borrarEvento.bind(this),
+    // );
   }
 
-  // ---------------------------------------------------------------MOUSE PULSADO
+  // ---------------------------------------------------------------LÓGICA DE DRAGSCROLL
   mouseDownHandler(_e) {
     // Sólo reacciona al click derecho
     if (_e.button === 2) {
@@ -41,7 +53,6 @@ class HuesoCanvas extends Hueso {
       };
     }
   }
-  // ---------------------------------------------------------------MOUSE EN MOVIMIENTO
   mouseMoveHandler(_e) {
     // Sólo se ejecuta si el mouse se presionó sobre el área
     if (this.dragscrollStarted) {
@@ -61,7 +72,6 @@ class HuesoCanvas extends Hueso {
       this.element.elt.scrollLeft = this.dragscrollData.left - dx;
     }
   }
-  // ---------------------------------------------------------------MOUSE SOLTADO
   mouseUpHandler() {
     if (this.dragscrollStarted) {
       // Reconocer si recién terminó de dragscrollear
@@ -82,64 +92,65 @@ class HuesoCanvas extends Hueso {
       this.element.elt.style.removeProperty("user-select");
     }
   }
+
+  // ---------------------------------------------------------------CREAR EVENTO
+  crearEvento(_e) {
+    let e = _e.detail.original_e;
+
+    for (let t of this.tramas) {
+      //   if (t.contieneTarget(e)) {
+      t.nuevoEvento(e);
+      //   }
+    }
+  }
+
+  // // ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
+  // borrarEvento(_e) {
+  //   let h = _e.target.hueso;
+
+  //   // Eliminar eventos globales asociados
+  //   document.removeEventListener("mousemove", h.mouseMoved.bind(h));
+  //   document.removeEventListener("mouseup", h.mouseUp.bind(h));
+
+  //   // Eliminar el Hueso del array
+  //   for (let t of this.tramas) {
+  //     if (t.contieneTarget(_e)) {
+  //       let i = t.eventos.indexOf(h);
+  //       t.eventos.splice(i, 1);
+  //     }
+  //   }
+
+  //   // Borrar el HTML
+  //   h.element.remove();
+
+  //   // El objeto sólo se borra si ya no tiene referencias en ejecución,
+  //   // así que recemos para que esto sea suficiente (?
+  // }
 }
 
-// const canvasDiv = document.querySelector("#canvas");
-
-// let dragscrollData = { top: 0, left: 0, x: 0, y: 0 };
-// let dragscrolling = false;
-// let dragscrolled = false;
-
-// // ---------------------------------------------------------------MOUSE PULSADO
-// canvasDiv.addEventListener("mousedown", (e) => {
-//   // Sólo reacciona al click derecho
-//   if (e.button === 2) {
-//     dragscrollData = {
-//       // The current scroll
-//       left: canvasDiv.scrollLeft,
-//       top: canvasDiv.scrollTop,
-//       // Get the current mouse position
-//       x: e.clientX,
-//       y: e.clientY,
-//     };
-
-//     document.addEventListener("mousemove", mouseMoveHandler);
-//     document.addEventListener("mouseup", mouseUpHandler);
-//   }
+// // ----------------------------------------------------------------------------CREAR EVENTO NUEVO
+// let eventos = [];
+// document.addEventListener("crearEvento", function (_e) {
+//   // eventos.push(new HuesoEvento(round(mouseX), round(mouseY), huesoCanvas));
+//   let e = _e.detail.original_e;
+//   eventos.push(new HuesoEvento(round(e.offsetX), round(e.offsetY), huesoCanvas));
 // });
 
-// // ----------------------------------------------------------------------------MOUSE EN MOVIMIENTO
-// const mouseMoveHandler = function (e) {
-//   dragscrolling = true;
-//   dragscrolled = true;
+// // ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
+// document.addEventListener("borrarEvento", function (_e) {
+//   let h = _e.target.hueso;
 
-//   // Change the cursor and prevent user from selecting the text
-//   canvasDiv.style.cursor = "grabbing";
-//   canvasDiv.style.userSelect = "none";
+//   // Eliminar eventos globales asociados
+//   document.removeEventListener("mousemove", h.mouseMoved.bind(h));
+//   document.removeEventListener("mouseup", h.mouseUp.bind(h));
 
-//   // How far the mouse has been moved
-//   const dx = e.clientX - dragscrollData.x;
-//   const dy = e.clientY - dragscrollData.y;
+//   // Eliminar el Hueso del array
+//   let i = eventos.indexOf(h);
+//   eventos.splice(i, 1);
 
-//   // Scroll the element
-//   canvasDiv.scrollTop = dragscrollData.top - dy;
-//   canvasDiv.scrollLeft = dragscrollData.left - dx;
+//   // Borrar el HTML
+//   h.element.remove();
 
-//   // Esconder menú contextual
-//   contextMenu.ocultar();
-// };
-
-// // ----------------------------------------------------------------------------MOUSE SOLTADO
-// const mouseUpHandler = function () {
-//   // Reconocer si recién terminó de dragscrollear
-//   if (!dragscrolling) {
-//     dragscrolled = false;
-//   }
-//   dragscrolling = false;
-
-//   document.removeEventListener("mousemove", mouseMoveHandler);
-//   document.removeEventListener("mouseup", mouseUpHandler);
-
-//   canvasDiv.style.cursor = "default";
-//   canvasDiv.style.removeProperty("user-select");
-// };
+//   // El objeto sólo se borra si ya no tiene referencias en ejecución,
+//   // así que recemos para que esto sea suficiente (?
+// });

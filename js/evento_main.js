@@ -20,7 +20,7 @@ class Evento_Aportes extends Hueso {
 
     // Botón para agregar aportes
     this.agregarDiv = new Hueso(createDiv(), "aportesInner2", this);
-    this.agregarButt = new Evento_Agregar("aporte", this);
+    this.agregarButt = new Evento_Agregar("aporte", this.agregarDiv);
     this.element.elt.addEventListener(
       "agregar",
       this.nuevoAporte.bind(this, true),
@@ -60,7 +60,6 @@ class Evento_Aportes extends Hueso {
 
     // Mueve el botón de agregar para que siga donde corresponde
     this.agregarButt.moverACaja(this.agregarDiv);
-    // this.agregarButt.moverA(false, this.innerDiv.actualizarTam().y);
   }
 
   // ---------------------------------------------------------------BORRAR APORTE

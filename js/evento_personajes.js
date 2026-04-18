@@ -9,7 +9,7 @@ class Evento_Conector extends HuesoFlotante {
     // Crear el botón de agregar personaje
     // this.agregarDiv = new HuesoFlotante(createDiv(), "conectaNodosButt", this);
     this.agregar = new Evento_Agregar("participante", this);
-    this.agregar.moverA(
+    this.agregar.mover(
       -this.agregar.actualizarTam().x / 4,
       this.agregar.actualizarTam().y,
     );
