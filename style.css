@@ -129,6 +129,9 @@ textarea:focus {
 
 /* ---------------------------------------------------------------EVENTOS */
 /* Conectores de trama */
+.trama {
+  position: relative;
+}
 .tramaConector {
   z-index: 1;
   pointer-events: none;

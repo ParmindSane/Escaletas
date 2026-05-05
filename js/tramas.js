@@ -1,8 +1,8 @@
 // ----------------------------------------------------------------------------CLASE APORTE
-class HuesoTrama extends HuesoFlotante {
+class HuesoTrama extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_padre) {
-    super(createDiv(), "trama", _padre);
+    super(document.createElement("div"), "trama", _padre);
 
     this.eventos = [];
     this.puntosConectores = [];
@@ -10,29 +10,30 @@ class HuesoTrama extends HuesoFlotante {
 
     this.color = "0, 200, 0";
 
-    // Acomodar líneas conectoras
-    this.element.elt.addEventListener(
+    // Acomodar líneas conectoras al mover los Eventos
+    this.element.addEventListener(
       "dragEventoMoved",
+      this.moverConectores.bind(this),
+    );
+    this.element.addEventListener(
+      "dragEventoEnd",
       this.moverConectores.bind(this),
     );
 
     // Cambiar color
-    this.element.elt.addEventListener(
+    this.element.addEventListener(
       "tramaCambiarColor",
       this.cambiarColor.bind(this),
     );
 
     // Borrar evento
-    this.element.elt.addEventListener(
-      "borrarEvento",
-      this.borrarEvento.bind(this),
-    );
+    this.element.addEventListener("borrarEvento", this.borrarEvento.bind(this));
   }
 
   // ----------------------------------------------------------------------------AGREGAR EVENTO
   nuevoEvento(_e) {
     // Crear nuevo Evento
-    let ne = new HuesoEvento(round(_e.offsetX), round(_e.offsetY), this);
+    let ne = new HuesoEvento(_e.offsetX, _e.offsetY, this);
     this.eventos.push(ne);
     let i = this.eventos.indexOf(ne);
 
@@ -139,7 +140,7 @@ class HuesoTrama extends HuesoFlotante {
 class Trama_Conector extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_punto0, _punto1, _padre) {
-    super(createDiv(), "tramaConector", _padre);
+    super(document.createElement("div"), "tramaConector", _padre);
 
     this.punto0 = _punto0;
     this.punto1 = _punto1;
@@ -187,8 +188,8 @@ class Trama_Conector extends HuesoFlotante {
       y2 +
       ' stroke="rgb(' +
       this.color +
-      ')" stroke-width="8" /> </svg>';
-    this.element.html(this.contenido);
+      ')" stroke-width="8" stroke-linecap="round" /> </svg>';
+    this.element.innerHTML = this.contenido;
 
     // Acomoda la caja cuando se mueven los Eventos que conecta
     let puntoMenorX = Math.min(this.punto0.x, this.punto1.x);

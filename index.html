@@ -10,9 +10,6 @@
     <!-- <link rel="icon" type="image/x-icon" href="/assets/icon.png" /> -->
 
     <link rel="stylesheet" type="text/css" href="./style.css" />
-
-    <script src="./libraries/p5.min.js"></script>
-    <script src="./libraries/p5.sound.min.js"></script>
   </head>
 
   <body>
@@ -21,8 +18,10 @@
       <section
         id="canvas"
         class="dragArea context"
-        style="height: 100%; overflow: auto; position: relative"
-      ></section>
+        style="width: 100vw; height: 100vh; overflow: auto; position: relative"
+      >
+        <div id="innerCanvas" style="position: relative"></div>
+      </section>
 
       <!-- ----------------------------------------------------------------------------INTERFAZ -->
       <div id="summonableMenus" class="noContext">
@@ -34,6 +33,16 @@
         <!-- ------------------------------------------------------------ICON MENU -->
         <div id="iconMenu" class="noContext oculto"></div>
       </div>
+      <div
+        id="debugCursor"
+        style="
+          padding: 4px;
+          z-index: 100;
+          background-color: rgba(255, 255, 255, 0.9);
+          pointer-events: none;
+          white-space: pre-line;
+        "
+      ></div>
 
       <!-- ------------------------------------------------------------BARRA SUPERIOR -->
       <!-- <header
@@ -59,24 +68,25 @@
     </div>
 
     <!-- ----------------------------------------------------------------------------SCRIPTS -->
-    <!-- p5 Canvas -->
-    <script>
-      const script = document.createElement("script");
-      script.src = "./js/sketch.js?v=" + Date.now(); // agrega timestamp único
-      document.body.appendChild(script);
-    </script>
+    <!-- Funciones auxiliares -->
+    <script src="./js/auxiliares.js"></script>
 
-    <!-- Componentes -->
-    <script src="./js/huesos.js"></script>
+    <!-- Huesos -->
+    <script src="./js/huesos/huesosBase.js"></script>
+    <script src="./js/huesos/huesosUI.js"></script>
+
+    <!-- Debug -->
+    <script src="./js/debug.js"></script>
 
     <!-- Menú contextual personalizado -->
-    <script src="./js/contextMenu.js"></script>
+    <script src="./js/contextMenu/contextMenu.js"></script>
+    <script src="./js/contextMenu/iconMenu.js"></script>
 
     <!-- Eventos -->
-    <script src="./js/evento_main.js"></script>
-    <script src="./js/evento_head.js"></script>
-    <script src="./js/evento_personajes.js"></script>
-    <script src="./js/evento.js"></script>
+    <script src="./js/eventos/evento_main.js"></script>
+    <script src="./js/eventos/evento_head.js"></script>
+    <script src="./js/eventos/evento_personajes.js"></script>
+    <script src="./js/eventos/evento.js"></script>
 
     <!-- Tramas -->
     <script src="./js/tramas.js"></script>

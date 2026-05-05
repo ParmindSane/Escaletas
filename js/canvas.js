@@ -1,8 +1,33 @@
+// EL CANVAS EN SÍ TIENE QUE SER DEL TAMAÑO DE LA PANTALLA Y TENER ALGO MÁS GRANDE ADENTRO PARA SER SCROLLEABLE
+// ANTES ERA EL P5.CANVAS PERO LO ELIMINASTE JAJA QUÉ PRINGAO
+
 // ----------------------------------------------------------------------------CONTENEDOR DEL CANVAS
 class HuesoCanvas extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor() {
-    super(select("#canvas"));
+    super(document.getElementById("canvas"));
+    // this.element.style.width = window.innerWidth * 2 + "px";
+    // this.element.style.height = window.innerHeight * 2 + "px";
+
+    this.canvas = new Hueso(document.getElementById("innerCanvas"));
+
+    // Dibujar líneas de referencia
+    let vw2 = window.innerWidth * 2;
+    let vh2 = window.innerHeight * 2;
+    this.canvas.element.innerHTML =
+      "<svg style='position:absolute' width=" +
+      vw2 +
+      " height=" +
+      vh2 +
+      " > <line x1=0 y1=0 x2=" +
+      vw2 +
+      " y2=" +
+      vh2 +
+      ' stroke="black" stroke-width="1" /> <line x1=0 y1=' +
+      vh2 +
+      " x2=" +
+      vw2 +
+      ' y2=0 stroke="black" stroke-width="1" /> </svg>';
 
     // Información para controlar el dragscroll
     this.dragscrollData = { top: 0, left: 0, x: 0, y: 0 };
@@ -11,13 +36,16 @@ class HuesoCanvas extends Hueso {
     this.dragscrolled = false;
 
     // Eventos del mouse para el dragscroll
-    this.element.mousePressed(this.mouseDownHandler.bind(this));
+    this.element.addEventListener(
+      "mousedown",
+      this.mouseDownHandler.bind(this),
+    );
     document.addEventListener("mousemove", this.mouseMoveHandler.bind(this));
     document.addEventListener("mouseup", this.mouseUpHandler.bind(this));
 
     // Tramas
     this.tramas = [];
-    this.tramas.push(new HuesoTrama(this));
+    this.tramas.push(new HuesoTrama(this.canvas));
 
     // Crear y borrar Evento
     this.newContextOption(
@@ -25,10 +53,6 @@ class HuesoCanvas extends Hueso {
       "Nuevo evento",
       this.crearEvento.bind(this),
     );
-    // this.element.elt.addEventListener(
-    //   "borrarEvento",
-    //   this.borrarEvento.bind(this),
-    // );
   }
 
   // ---------------------------------------------------------------LÓGICA DE DRAGSCROLL
@@ -36,7 +60,7 @@ class HuesoCanvas extends Hueso {
     // Sólo reacciona al click derecho
     if (_e.button === 2) {
       this.dragscrollStarted = true;
-      this.element.elt.dispatchEvent(
+      this.element.dispatchEvent(
         new CustomEvent("dragscrollStart", {
           bubbles: true, // Allows the event to bubble up the DOM
           cancelable: true, // Allows the event's default action to be prevented
@@ -45,8 +69,8 @@ class HuesoCanvas extends Hueso {
 
       this.dragscrollData = {
         // The current scroll
-        left: this.element.elt.scrollLeft,
-        top: this.element.elt.scrollTop,
+        left: this.element.scrollLeft,
+        top: this.element.scrollTop,
         // Get the current mouse position
         x: _e.clientX,
         y: _e.clientY,
@@ -60,16 +84,16 @@ class HuesoCanvas extends Hueso {
       this.dragscrolled = true;
 
       // Change the cursor and prevent user from selecting the text
-      this.element.elt.style.cursor = "all-scroll";
-      this.element.elt.style.userSelect = "none";
+      this.element.style.cursor = "all-scroll";
+      this.element.style.userSelect = "none";
 
       // How far the mouse has been moved
       const dx = _e.clientX - this.dragscrollData.x;
       const dy = _e.clientY - this.dragscrollData.y;
 
       // Scroll the element
-      this.element.elt.scrollTop = this.dragscrollData.top - dy;
-      this.element.elt.scrollLeft = this.dragscrollData.left - dx;
+      this.element.scrollTop = this.dragscrollData.top - dy;
+      this.element.scrollLeft = this.dragscrollData.left - dx;
     }
   }
   mouseUpHandler() {
@@ -77,7 +101,7 @@ class HuesoCanvas extends Hueso {
       // Reconocer si recién terminó de dragscrollear
       if (!this.dragscrolling) {
         this.dragscrolled = false;
-        this.element.elt.dispatchEvent(
+        this.element.dispatchEvent(
           new CustomEvent("dragscrollEnd", {
             bubbles: true, // Allows the event to bubble up the DOM
             cancelable: true, // Allows the event's default action to be prevented
@@ -88,8 +112,8 @@ class HuesoCanvas extends Hueso {
       this.dragscrollStarted = false;
 
       // Estilo del cursor
-      this.element.elt.style.cursor = "default";
-      this.element.elt.style.removeProperty("user-select");
+      this.element.style.cursor = "default";
+      this.element.style.removeProperty("user-select");
     }
   }
 
@@ -103,54 +127,10 @@ class HuesoCanvas extends Hueso {
       //   }
     }
   }
-
-  // // ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
-  // borrarEvento(_e) {
-  //   let h = _e.target.hueso;
-
-  //   // Eliminar eventos globales asociados
-  //   document.removeEventListener("mousemove", h.mouseMoved.bind(h));
-  //   document.removeEventListener("mouseup", h.mouseUp.bind(h));
-
-  //   // Eliminar el Hueso del array
-  //   for (let t of this.tramas) {
-  //     if (t.contieneTarget(_e)) {
-  //       let i = t.eventos.indexOf(h);
-  //       t.eventos.splice(i, 1);
-  //     }
-  //   }
-
-  //   // Borrar el HTML
-  //   h.element.remove();
-
-  //   // El objeto sólo se borra si ya no tiene referencias en ejecución,
-  //   // así que recemos para que esto sea suficiente (?
-  // }
 }
 
-// // ----------------------------------------------------------------------------CREAR EVENTO NUEVO
-// let eventos = [];
-// document.addEventListener("crearEvento", function (_e) {
-//   // eventos.push(new HuesoEvento(round(mouseX), round(mouseY), huesoCanvas));
-//   let e = _e.detail.original_e;
-//   eventos.push(new HuesoEvento(round(e.offsetX), round(e.offsetY), huesoCanvas));
-// });
-
-// // ----------------------------------------------------------------------------BORRAR EVENTO SELECCIONADO
-// document.addEventListener("borrarEvento", function (_e) {
-//   let h = _e.target.hueso;
-
-//   // Eliminar eventos globales asociados
-//   document.removeEventListener("mousemove", h.mouseMoved.bind(h));
-//   document.removeEventListener("mouseup", h.mouseUp.bind(h));
-
-//   // Eliminar el Hueso del array
-//   let i = eventos.indexOf(h);
-//   eventos.splice(i, 1);
-
-//   // Borrar el HTML
-//   h.element.remove();
-
-//   // El objeto sólo se borra si ya no tiene referencias en ejecución,
-//   // así que recemos para que esto sea suficiente (?
-// });
+// ----------------------------------------------------------------------------CREAR OBJETO CANVAS
+let huesoCanvas;
+document.addEventListener("DOMContentLoaded", () => {
+  huesoCanvas = new HuesoCanvas();
+});

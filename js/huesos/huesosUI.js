@@ -1,202 +1,49 @@
-// ----------------------------------------------------------------------------CLASE P5 -> HTML
-class Hueso {
-  // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_element, _clases, _padre) {
-    // Crearlo como p5.Element facilita algunas funciones en relación al Canvas
-    // (se accede al elemento posta con .elt)
-    this.element = _element;
-    this.padre = _padre;
-
-    // Si crea un elemento nuevo, le aplica los otros parámetros
-    if (_clases && _padre) {
-      this.element.parent(this.padre.element);
-      this.element.addClass(_clases);
-    } else {
-      // Si usa un elemento que ya existe, toma sus datos
-      if (this.element.parent().hueso) {
-        this.padre = this.element.parent().hueso;
-      }
-    }
-
-    // Referencia al Hueso en el Elemento
-    // (para cuando se lo accede desde un evento)
-    this.element.elt.hueso = this;
-
-    // Guardar tamaño asignado por CSS a la clase. Por defecto es 0
-    this.actualizarTam();
-
-    // Dejar preparado un array para las opciones de menú contextual
-    this.contextOptions = [];
-  }
-
-  // ---------------------------------------------------------------CREAR NUEVA OPCIÓN DE MENÚ CONTEXTUAL
-  newContextOption(_evento, _texto, _method) {
-    this.contextOptions.push(new ContextOption(this, _evento, _texto));
-
-    // Si se especificó un método, se añade un EventListener local que lo ejecute
-    if (_method) {
-      this.element.elt.addEventListener(_evento, _method.bind(this));
-    }
-  }
-
-  // ---------------------------------------------------------------DETECTAR SI CONTIENE EL OBJETO DADO
-  contieneTarget(_e) {
-    // El parámetro puede ser un objeto o un evento cuyo target es ese objeto
-    let t = _e.target ? _e.target : _e;
-    return this.element.elt.contains(t) || this.element.elt === t;
-  }
-
-  // ---------------------------------------------------------------ACTUALIZAR TAMAÑO DEL ELEMENTO
-  actualizarTam() {
-    // Guardar acceso rápido al tamaño actual del elemento
-    // this.tamX = this.element.size().width;
-    // this.tamY = this.element.size().height;
-    this.tamX = this.element.elt.clientWidth;
-    this.tamY = this.element.elt.clientHeight;
-
-    return { x: this.tamX, y: this.tamY };
-  }
-}
-
-// ----------------------------------------------------------------------------CLASE P5 -> HTML CON POSICIÓN DEFINIDA
-class HuesoFlotante extends Hueso {
-  // ---------------------------------------------------------------CONSTRUCTOR
-  constructor(_element, _clase, _padre) {
-    super(_element, _clase, _padre);
-
-    this.posX = 0;
-    this.posY = 0;
-
-    // Si el padre está desfasado, le resta su desfase
-    // para tomar de referencia las coordenadas originales del Hueso
-    if (this.padre) {
-      if (this.padre.desfaseX) {
-        this.posX = -this.padre.desfaseX;
-        this.posY = -this.padre.desfaseY;
-      }
-    }
-
-    // Para guardar la posición del Hueso antes de cambiarla
-    // Así sé cuánto se movió cada vez
-    this.pPosX = this.posX;
-    this.pPosY = this.posY;
-
-    // Distancia entre la posición del Hueso y la del elemento
-    this.desfaseX = 0;
-    this.desfaseY = 0;
-
-    this.mover(0, 0);
-  }
-
-  // ---------------------------------------------------------------CAMBIAR POSICIÓN DEL HUESO
-  mover(_x, _y) {
-    // Guardar posición anterior
-    this.pPosX = this.posX;
-    this.pPosY = this.posY;
-
-    // Si tiene un padre definido, toma de referencia a su Hueso para las coordenadas
-    // (por defecto toma el 0;0 del elemento, que no tiene por qué ser el mismo)
-    // let refeX = 0;
-    // let refeY = 0;
-    // if (this.padre) {
-    //   if (this.padre.desfaseX) {
-    //     refeX = -this.padre.desfaseX;
-    //     refeY = -this.padre.desfaseY;
-    //   }
-    // }
-
-    // Si no se da un parámetro, se queda donde estaba
-    // (para no tener que escribir hueso.pos cada vez)
-    if (_x) {
-      // this.posX = refeX + _x;
-      this.posX = _x;
-    }
-    if (_y) {
-      // this.posY = refeY + _y;
-      this.posY = _y;
-    }
-
-    // Actualiza la ubicación del elemento manteniendo su posición relativa al Hueso
-    this.desfasar(false, false);
-  }
-
-  // ---------------------------------------------------------------MOVER HUESO HACIA HTML
-  moverACaja(_t) {
-    // Funciona con un parámetro que sea un elemento html
-    let t = _t;
-
-    if (t.element) {
-      // O un hueso
-      t = t.element.elt;
-    } else if (t.elt) {
-      // O un hueso.element
-      t = t.elt;
-    }
-
-    this.mover(t.offsetLeft, t.offsetTop);
-  }
-
-  // ---------------------------------------------------------------MOVER HTML
-  desfasar(_x, _y) {
-    // Si no se da un parámetro de desfase, se queda como estaba
-    // (para no tener que escribir hueso.desfase cada vez)
-    if (_x) {
-      this.desfaseX = _x;
-    }
-    if (_y) {
-      this.desfaseY = _y;
-    }
-
-    // Mueve el elemento sin afectar al Hueso
-    this.element.position(this.posX + this.desfaseX, this.posY + this.desfaseY);
-  }
-}
-
 // ----------------------------------------------------------------------------CLASE P5 -> HTML PARA TEXTO EDITABLE
 class HuesoTexto extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_cartel, _clase, _padre, _startOpen) {
-    super(createDiv(), _clase + " huesoTexto", _padre);
+    super(document.createElement("div"), _clase + " huesoTexto", _padre);
 
     this.dato = _cartel;
 
     // Objeto estático que no se puede editar
-    this.eInherte = new Hueso(createDiv(this.dato), "textBox_inherte", this);
-    // this.eInherte.element = createDiv(this.dato);
-    // this.eInherte.element.parent(this.element);
+    this.eInherte = new Hueso(
+      document.createElement("div", this.dato),
+      "textBox_inherte",
+      this,
+    );
+    this.eInherte.element.innerHTML = this.dato;
 
     // Objeto de texto editable
     this.eEditable = new HuesoFlotante(
-      createElement("textarea", this.dato),
+      document.createElement("textarea"),
       "textBox_editable noContext",
       this,
     );
+    this.eEditable.element.innerHTML = this.dato;
     this.eEditable.moverACaja(this.eInherte);
-    // this.eEditable.element = createElement("textarea", this.dato);
-    // this.eEditable.element.parent(this.element);
-    // this.eEditable.element.addClass("noContext");
 
     // ¿Arranca editando o mostrando?
     this.editando = _startOpen;
     if (!this.editando) {
-      this.eEditable.element.addClass("oculto");
+      this.eEditable.element.classList.add("oculto");
     } else {
-      // this.eInherte.element.addClass("oculto");
+      // this.eInherte.element.classList.add("oculto");
 
       // El textarea arranca abierto y con el texto seleccionado
       this.editar(true);
-      this.eEditable.element.elt.setSelectionRange(0, this.dato.length);
+      this.eEditable.element.setSelectionRange(0, this.dato.length);
     }
-    this.actualizarTam();
+    this.getTam();
 
     // Se entra a editar con doble click
     // y se sale usando el mouse fuera del objeto
-    this.element.doubleClicked(this.editar.bind(this));
+    this.element.addEventListener("dblclick", this.editar.bind(this));
     document.addEventListener("mousedown", this.mouseSensor.bind(this));
     document.addEventListener("wheel", this.dejarDeEditar.bind(this));
 
     // Actualizar el tamaño de la caja a medida que se escribe
-    this.eEditable.element.input(this.inputTam.bind(this));
+    this.eEditable.element.addEventListener("input", this.inputTam.bind(this));
 
     // Entrar al modo edición desde el menú contextual
     this.newContextOption(
@@ -213,13 +60,14 @@ class HuesoTexto extends Hueso {
 
       // Esconde el estático y deja el editable seleccionado a la vista
       // (acomoda el tamaño por si quedó muy grande de la vez anterior)
-      // this.eInherte.element.addClass("oculto");
-      this.eEditable.element.removeClass("oculto");
-      this.eEditable.element.size(this.tamX, this.tamY + 16);
-      this.eEditable.element.elt.focus();
+      this.eEditable.element.classList.remove("oculto");
+      // this.eEditable.element.size(this.tamX, this.tamY + 16);
+      this.eEditable.element.style.width = this.tamX + "px";
+      this.eEditable.element.style.height = this.tamY + 16 + "px";
+      this.eEditable.element.focus();
 
       // Avisa que se empezó a editar
-      this.element.elt.dispatchEvent(
+      this.element.dispatchEvent(
         new CustomEvent("inputAbierto", {
           bubbles: true, // Allows the event to bubble up the DOM
           cancelable: true, // Allows the event's default action to be prevented
@@ -234,21 +82,21 @@ class HuesoTexto extends Hueso {
       this.editando = false;
 
       // Evita que el texto se quede seleccionado
-      this.eEditable.element.elt.selectionEnd = 0;
+      this.eEditable.element.selectionEnd = 0;
 
       // Actualizar dato y tamaño
-      this.dato = this.eEditable.element.value();
-      this.eInherte.element.html(this.dato);
+      this.dato = this.eEditable.element.value;
+      this.eInherte.element.innerHTML = this.dato;
 
       // Oculta el editable y muestra el estático
-      // this.eInherte.element.removeClass("oculto");
-      this.eEditable.element.addClass("oculto");
+      // this.eInherte.element.classList.remove("oculto");
+      this.eEditable.element.classList.add("oculto");
 
       // Por si el nuevo texto cambió el tamaño de la caja
-      this.actualizarTam();
+      this.getTam();
 
       // Avisa que se terminó de editar
-      this.element.elt.dispatchEvent(
+      this.element.dispatchEvent(
         new CustomEvent("inputCerrado", {
           bubbles: true, // Allows the event to bubble up the DOM
           cancelable: true, // Allows the event's default action to be prevented
@@ -270,19 +118,18 @@ class HuesoTexto extends Hueso {
   // ---------------------------------------------------------------ACTUALIZAR TAMAÑO AL ESCRIBIR
   inputTam() {
     // Guardar el tamaño actual y habilitarlo para cambiar
-    let py = int(this.eEditable.element.elt.style.height);
-    this.eEditable.element.elt.style.height =
+    let py = parseInt(this.eEditable.element.style.height, 10);
+    this.eEditable.element.style.height =
       "auto"; /* Reset height to allow shrinking */
-    this.eEditable.element.elt.style.height =
-      this.eEditable.element.elt.scrollHeight +
-      "px"; /* Set to the scroll height */
+    this.eEditable.element.style.height =
+      this.eEditable.element.scrollHeight + "px"; /* Set to the scroll height */
 
     // Si el nuevo tamaño es mayor, agranda el elemento
     // Si no, lo deja como estaba
-    if (py > this.eEditable.element.elt.scrollHeight) {
-      this.eEditable.element.elt.style.height = py + "px";
+    if (py > this.eEditable.element.scrollHeight) {
+      this.eEditable.element.style.height = py + "px";
     }
-    this.actualizarTam();
+    this.getTam();
   }
 }
 
@@ -290,7 +137,7 @@ class HuesoTexto extends Hueso {
 class HuesoIcon extends Hueso {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_tipo, _icon, _padre, _editable) {
-    super(createDiv(), "iconito", _padre);
+    super(document.createElement("div"), "iconito", _padre);
 
     this.icon = _icon;
     this.tipo = _tipo;
@@ -304,8 +151,8 @@ class HuesoIcon extends Hueso {
     this.editable = _editable;
     if (this.editable) {
       // Llama el menú al hacerle doble click
-      this.element.doubleClicked(this.pedirCambio.bind(this));
-      this.element.elt.addEventListener("iconChange", this.cambiar.bind(this));
+      this.element.addEventListener("dblclick", this.pedirCambio.bind(this));
+      this.element.addEventListener("iconChange", this.cambiar.bind(this));
 
       // O con un botón del menú contextual
       this.newContextOption(
@@ -326,7 +173,7 @@ class HuesoIcon extends Hueso {
     }
 
     // Llama al menú de opciones
-    this.element.elt.dispatchEvent(
+    this.element.dispatchEvent(
       new CustomEvent("iconMenu", {
         detail: {
           target: this,
@@ -343,8 +190,6 @@ class HuesoIcon extends Hueso {
   cambiar(_e) {
     // Si no viene ningún parámetro, crea un ícono nuevito de cero.
     if (!_e) {
-      // Traté de generarlo como p5.Element
-      // pero cargaba mal la ruta y me dio paja xd
       this.content =
         '<svg class="icon" width="32" height="32" viewBox="0 0 32 32">' +
         '<use href="./assets/icons/' +
@@ -359,7 +204,7 @@ class HuesoIcon extends Hueso {
       this.content = _e.detail.icon;
     }
 
-    this.element.html(this.content);
+    this.element.innerHTML = this.content;
   }
 }
 
@@ -384,20 +229,20 @@ class HuesoSummonMenu extends HuesoFlotante {
     this.justInvocado = true;
 
     // Mostrar el menú
-    this.element.removeClass("oculto");
-    this.actualizarTam();
+    this.element.classList.remove("oculto");
+    this.getTam();
 
     // Evitar que se salga de la pantalla por la derecha
     let cx = _x + 4;
     let margin = this.tamX + 16;
-    let dist = windowWidth - cx;
+    let dist = window.innerWidth - cx;
     if (dist < margin) {
       cx -= margin - dist;
     }
     // Y por abajo
     let cy = _y;
     margin = this.tamY + 16;
-    dist = windowHeight - cy;
+    dist = window.innerHeight - cy;
     if (dist < margin) {
       cy -= margin - dist;
     }
@@ -414,11 +259,11 @@ class HuesoSummonMenu extends HuesoFlotante {
     if (_vaciar) {
       this.context = [];
       this.buttons = [];
-      this.element.html(" ");
+      this.element.textContent = " ";
     }
 
     // Esconder
-    this.element.addClass("oculto");
+    this.element.classList.add("oculto");
   }
 
   // ---------------------------------------------------------------OCULTAR POR CLICK EXTERNO

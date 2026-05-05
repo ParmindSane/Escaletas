@@ -2,7 +2,7 @@
 class HuesoEvento extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_x, _y, _padre) {
-    super(createDiv(), "evento", _padre);
+    super(document.createElement("div"), "evento", _padre);
     this.mover(_x, _y);
 
     this.vistaDetallada = true;
@@ -14,7 +14,7 @@ class HuesoEvento extends HuesoFlotante {
     this.dragging = false;
     this.dragged = false;
     this.dragData = { px: 0, py: 0, mx: 0, my: 0 };
-    this.element.mousePressed(this.mouseDown.bind(this));
+    this.element.addEventListener("mousedown", this.mouseDown.bind(this));
     document.addEventListener("mousemove", this.mouseMoved.bind(this));
     document.addEventListener("mouseup", this.mouseUp.bind(this));
 
@@ -24,11 +24,11 @@ class HuesoEvento extends HuesoFlotante {
       this.inputAbierto = _b;
       this.centrar();
     };
-    this.element.elt.addEventListener(
+    this.element.addEventListener(
       "inputAbierto",
       this.inputSensor.bind(this, false),
     );
-    this.element.elt.addEventListener(
+    this.element.addEventListener(
       "inputCerrado",
       this.inputSensor.bind(this, true),
     );
@@ -38,7 +38,7 @@ class HuesoEvento extends HuesoFlotante {
     let guardarOcultable = function (_e) {
       this.ocultables.push(_e.target);
     };
-    this.element.elt.addEventListener(
+    this.element.addEventListener(
       "holaSoyOcultable",
       guardarOcultable.bind(this),
     );
@@ -60,7 +60,7 @@ class HuesoEvento extends HuesoFlotante {
     this.nodos = [];
 
     this.mainDiv = new HuesoFlotante(
-      createDiv(),
+      document.createElement("div"),
       "eventoMain eventoNodo",
       this,
     );
@@ -71,7 +71,11 @@ class HuesoEvento extends HuesoFlotante {
     this.tagsDiv = new Evento_Tags("evento", this.mainDiv);
 
     // Lugar
-    this.lugarDiv = new Hueso(createDiv(), "perfil noContainer", this.mainDiv);
+    this.lugarDiv = new Hueso(
+      document.createElement("div"),
+      "perfil noContainer",
+      this.mainDiv,
+    );
 
     // Resumen
     this.resumenDiv = new HuesoTexto(
@@ -86,55 +90,60 @@ class HuesoEvento extends HuesoFlotante {
 
     // Botón de agregar nodo
     this.agregarPersonaje = new Evento_Conector(this);
-    this.personajesDiv = new Hueso(createDiv(), "eventoPersonajes", this);
+    this.personajesDiv = new Hueso(
+      document.createElement("div"),
+      "eventoPersonajes",
+      this,
+    );
 
     // Acomodar las posiciones de las cosas cuando se agrega o borra algo
     this.centrar();
-    this.element.elt.addEventListener("borrar", this.centrar.bind(this));
-    this.element.elt.addEventListener(
-      "agregar",
-      this.nuevoPersonaje.bind(this),
-    );
+    this.element.addEventListener("borrar", this.centrar.bind(this));
+    this.element.addEventListener("agregar", this.nuevoPersonaje.bind(this));
 
     // ---------------------------------------------------------------CABEZA DEL NODO PRINCIPAL
-    this.headDiv = new HuesoFlotante(createDiv(), "eventoHead", this.mainDiv);
+    this.headDiv = new HuesoFlotante(
+      document.createElement("div"),
+      "eventoHead",
+      this.mainDiv,
+    );
     this.headDiv.headInnerDiv = new Hueso(
-      createDiv(),
+      document.createElement("div"),
       "eventoInnerHead",
       this.headDiv,
     );
 
     // Tiempo
     this.tiempoDiv = new Hueso(
-      createDiv(),
+      document.createElement("div"),
       "tiempo noContainer",
       this.headDiv.headInnerDiv,
     );
-    this.tiempoDiv.element.html("12:00");
+    this.tiempoDiv.element.innerHTML = "12:00";
 
     // Nivel de tensión
     this.tensionDiv = new Evento_Tension(this.headDiv.headInnerDiv);
 
     // Índice
     this.indexDiv = new Hueso(
-      createDiv(),
+      document.createElement("div"),
       "index noContainer",
       this.headDiv.headInnerDiv,
     );
-    this.indexDiv.element.html("1/1");
+    this.indexDiv.element.innerHTML = "1/1";
 
     // El título
     this.titleDiv = new HuesoTexto("Título", "title noContainer", this.headDiv);
 
     // Desfasar el contenido para mantenerlo centrado.
-    this.headDiv.actualizarTam();
+    this.headDiv.getTam();
     this.headDiv.desfasar(-(this.headDiv.tamX / 2), -this.headDiv.tamY);
 
     // Acomodar posición cuando cambia su contenido
     this.headDiv.ajustarTam = function (_e) {
-      this.headDiv.desfasar(false, -this.headDiv.actualizarTam().y);
+      this.headDiv.desfasar(false, -this.headDiv.getTam().y);
     };
-    this.headDiv.element.elt.addEventListener(
+    this.headDiv.element.addEventListener(
       "inputCerrado",
       this.headDiv.ajustarTam.bind(this),
     );
@@ -160,6 +169,9 @@ class HuesoEvento extends HuesoFlotante {
 
   // ---------------------------------------------------------------EVENTOS PARA DRAGGEAR
   mouseDown(_e) {
+    let mouseX = _e.clientX;
+    let mouseY = _e.clientY;
+
     // Al pulsar el click izquierdo sobre el objeto
     // Si no hay inputs abiertos
     // Ni estás parado sobre un ocultable
@@ -179,18 +191,21 @@ class HuesoEvento extends HuesoFlotante {
     }
   }
   mouseMoved(_e) {
+    let mouseX = _e.clientX;
+    let mouseY = _e.clientY;
+
     // Cuando ya empezó a draggear
     if (this.dragClick || this.dragging) {
       // Avisar al resto del documento
       if (this.dragClick) {
-        this.element.elt.dispatchEvent(
+        this.element.dispatchEvent(
           new CustomEvent("dragEventoStart", {
             bubbles: true,
             cancelable: true,
           }),
         );
       } else {
-        this.element.elt.dispatchEvent(
+        this.element.dispatchEvent(
           new CustomEvent("dragEventoMoved", {
             bubbles: true,
             cancelable: true,
@@ -203,8 +218,8 @@ class HuesoEvento extends HuesoFlotante {
       this.dragClick = false;
 
       // Estilo del cursor (obviamente)
-      this.element.style("cursor", "grabbing");
-      this.element.style("userSelect", "none");
+      this.element.style.cursor = "grabbing";
+      this.element.style.userSelect = "none";
 
       // Calcular desplazamiento del mouse
       this.dragData.mx = mouseX - this.dragData.px;
@@ -222,11 +237,11 @@ class HuesoEvento extends HuesoFlotante {
   mouseUp(_e) {
     // Detener el dragging al soltar el mouse
     if (this.dragging) {
-      this.element.style("cursor", "default");
+      this.element.style.cursor = "default";
       this.dragged = true;
 
       // Avisar al resto del documento
-      this.element.elt.dispatchEvent(
+      this.element.dispatchEvent(
         new CustomEvent("dragEventoEnd", {
           bubbles: true,
           cancelable: true,
@@ -265,8 +280,8 @@ class HuesoEvento extends HuesoFlotante {
               i.classList.contains("noContext") || !i.parentElement;
             esteEsElQueSabe = i.objetivo;
             if (esteEsElQueSabe) {
-              t = i.objetivo.element.elt;
-              fueMiContextMenu = this.element.elt.contains(t);
+              t = i.objetivo.element;
+              fueMiContextMenu = this.element.contains(t);
             }
           }
         }
@@ -285,7 +300,7 @@ class HuesoEvento extends HuesoFlotante {
           }
 
           // Y se des-destaca
-          this.element.style("z-index", "5");
+          this.element.style.zIndex = "5";
         }
       } else {
         // Si está seleccionado, se fija en cuál nodo fue
@@ -316,7 +331,7 @@ class HuesoEvento extends HuesoFlotante {
         }
 
         // También se pone un poquito por encima de los demás Eventos
-        this.element.style("z-index", "6");
+        this.element.style.zIndex = "6";
       }
 
       this.seleccionado = meSeleccionaron;
@@ -343,15 +358,15 @@ class HuesoEvento extends HuesoFlotante {
     if (this.resumenDiv && this.lugarDiv && this.tagsDiv) {
       this.mainDiv.desfasar(
         -(
-          this.tagsDiv.actualizarTam().x +
-          this.lugarDiv.actualizarTam().x +
-          this.resumenDiv.actualizarTam().x / 2
+          this.tagsDiv.getTam().x +
+          this.lugarDiv.getTam().x +
+          this.resumenDiv.getTam().x / 2
         ),
         0,
       );
 
       // También mueve todo lo que hay por abajo del nodo main
-      let alturaTotal = this.mainDiv.actualizarTam().y;
+      let alturaTotal = this.mainDiv.getTam().y;
       if (this.nodos.length > 1) {
         for (let i = 1; i < this.nodos.length; i++) {
           let p = this.nodos[i];
@@ -360,7 +375,7 @@ class HuesoEvento extends HuesoFlotante {
           p.centrar();
           p.mover(0, alturaTotal);
 
-          alturaTotal += p.actualizarTam().y;
+          alturaTotal += p.getTam().y;
         }
       }
       this.agregarPersonaje.mover(0, +alturaTotal);
@@ -389,7 +404,7 @@ class HuesoEvento extends HuesoFlotante {
   // ---------------------------------------------------------------ACTUALIZAR CONECTORES
   getConectores() {
     // Busca la caja del título
-    let box = this.titleDiv.element.elt.getBoundingClientRect();
+    let box = this.titleDiv.element.getBoundingClientRect();
 
     // También busca el objeto canvas, por si hubo scroll
     let canvas = document.getElementById("canvas");
@@ -415,17 +430,15 @@ class HuesoEvento extends HuesoFlotante {
 
     // Le aplica el nuevo color a todos los nodos
     for (let n of this.nodos) {
-      n.element.style("background-color", "rgb(" + this.color + ")");
+      n.element.style.backgroundColor = "rgb(" + this.color + ")";
       if (this.nodos.indexOf(n) > 0) {
         // Y a los conectores de los personajes
-        n.conector.element.style("background-color", "rgb(" + this.color + ")");
+        n.conector.element.style.backgroundColor = "rgb(" + this.color + ")";
       }
     }
     // Y al botón de agregar personaje
-    this.agregarPersonaje.element.style(
-      "background-color",
-      "rgb(" + this.color + ")",
-    );
+    this.agregarPersonaje.element.style.backgroundColor =
+      "rgb(" + this.color + ")";
   }
 
   // ---------------------------------------------------------------ACCIONES DEL MENÚ CONTEXTUAL
