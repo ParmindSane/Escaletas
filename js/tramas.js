@@ -11,12 +11,17 @@ class HuesoTrama extends Hueso {
     this.color = "0, 200, 0";
 
     // Acomodar líneas conectoras al mover los Eventos
+    // O cuando cambia el tamaño del título
     this.element.addEventListener(
       "dragEventoMoved",
       this.moverConectores.bind(this),
     );
     this.element.addEventListener(
       "dragEventoEnd",
+      this.moverConectores.bind(this),
+    );
+    this.element.addEventListener(
+      "headInput",
       this.moverConectores.bind(this),
     );
 
@@ -163,7 +168,7 @@ class Trama_Conector extends HuesoFlotante {
     let distY = this.punto1.y - this.punto0.y;
 
     // Esto mantiene los puntos de la línea en donde corresponde cuando se mueven
-    // Y contrarresta el margen adicional, para que el borde del contenedor no se coma el dibujo
+    // Y contrarresta el margen para que el borde del contenedor no se coma el dibujo
     let x1 = (distX < 0 ? Math.abs(distX) : 0) + this.margen;
     let y1 = (distY < 0 ? Math.abs(distY) : 0) + this.margen;
     let x2 = (distX > 0 ? Math.abs(distX) : 0) + this.margen;

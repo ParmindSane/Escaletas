@@ -116,7 +116,7 @@ class HuesoEvento extends HuesoFlotante {
     // Tiempo
     this.tiempoDiv = new Hueso(
       document.createElement("div"),
-      "tiempo noContainer",
+      "tiempo noContainer titleBox",
       this.headDiv.headInnerDiv,
     );
     this.tiempoDiv.element.innerHTML = "12:00";
@@ -127,26 +127,33 @@ class HuesoEvento extends HuesoFlotante {
     // Índice
     this.indexDiv = new Hueso(
       document.createElement("div"),
-      "index noContainer",
+      "index noContainer titleBox",
       this.headDiv.headInnerDiv,
     );
     this.indexDiv.element.innerHTML = "1/1";
 
     // El título
-    this.titleDiv = new HuesoTexto("Título", "title noContainer", this.headDiv);
+    this.titleDiv = new HuesoTexto(
+      "Título",
+      "title noContainer titleBox",
+      this.headDiv,
+    );
 
     // Desfasar el contenido para mantenerlo centrado.
     this.headDiv.getTam();
     this.headDiv.desfasar(-(this.headDiv.tamX / 2), -this.headDiv.tamY);
 
     // Acomodar posición cuando cambia su contenido
-    this.headDiv.ajustarTam = function (_e) {
+    let headInput = function (_e) {
       this.headDiv.desfasar(false, -this.headDiv.getTam().y);
+      this.element.dispatchEvent(
+        new CustomEvent("headInput", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
     };
-    this.headDiv.element.addEventListener(
-      "inputCerrado",
-      this.headDiv.ajustarTam.bind(this),
-    );
+    this.headDiv.element.addEventListener("inputCerrado", headInput.bind(this));
 
     // Acomodar color a la trama en la que está
     this.color;
@@ -188,6 +195,9 @@ class HuesoEvento extends HuesoFlotante {
       this.dragData.py = mouseY;
       this.dragData.mx = 0;
       this.dragData.my = 0;
+
+      // También se pone un poquito por encima de los demás Eventos
+      this.element.style.zIndex = "6";
     }
   }
   mouseMoved(_e) {
@@ -329,9 +339,6 @@ class HuesoEvento extends HuesoFlotante {
 
           this.nodoActivo = nodoClickeado;
         }
-
-        // También se pone un poquito por encima de los demás Eventos
-        this.element.style.zIndex = "6";
       }
 
       this.seleccionado = meSeleccionaron;

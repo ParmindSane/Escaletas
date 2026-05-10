@@ -9,10 +9,7 @@ class Evento_Conector extends HuesoFlotante {
     // Crear el botón de agregar personaje
     // this.agregarDiv = new HuesoFlotante(document.createElement("div"), "conectaNodosButt", this);
     this.agregar = new Evento_Agregar("participante", this);
-    this.agregar.mover(
-      -this.agregar.getTam().x / 4,
-      this.agregar.getTam().y,
-    );
+    this.agregar.mover(-this.agregar.getTam().x / 4, this.agregar.getTam().y);
 
     // Avisar que este objeto sólo se muestra al seleccionar el Evento
     this.element.dispatchEvent(
@@ -28,20 +25,37 @@ class Evento_Conector extends HuesoFlotante {
 class Evento_Personaje extends HuesoFlotante {
   // ---------------------------------------------------------------CONSTRUCTOR
   constructor(_i, _padre) {
-    super(document.createElement("div"), "eventoPersonaje eventoNodo participante_" + _i, _padre);
+    super(
+      document.createElement("div"),
+      "eventoPersonaje eventoNodo participante_" + _i,
+      _padre,
+    );
 
     // Tags
     this.tagsDiv = new Evento_Tags("personaje", this);
 
     // Perfil
-    this.perfilDiv = new Hueso(document.createElement("div"), "perfil noContainer", this);
-
-    // Objetivo
-    this.deseoDiv = new HuesoTexto(
-      "Objetivo",
-      "resumen textBox noContainer",
+    this.perfilDiv = new Hueso(
+      document.createElement("div"),
+      "perfil noContainer",
       this,
     );
+
+    // Trifecta+ del objetivo
+    this.deseoDiv = new Hueso(document.createElement("div"), "deseo", this);
+    this.deseoDivs = [];
+    let deseoTextos = [
+      "Objetivo: // qué quiere",
+      "Motivación: // por qué lo quiere",
+      "Obstáculo: // qué se lo impide",
+      "Riesgo: // qué pasa si no lo consigue",
+      "Urgencia: // qué lo apura a conseguirlo",
+    ];
+    for (let i = 0; i < 5; i++) {
+      this.deseoDivs.push(
+        new HuesoTexto(deseoTextos[i], "textBox noContainer", this.deseoDiv),
+      );
+    }
 
     // Aportes
     this.aportesDiv = new Evento_Aportes(this);
@@ -50,22 +64,13 @@ class Evento_Personaje extends HuesoFlotante {
     this.centrar(); // <----centrar (centrar)
 
     // Pendorchito que lo conecta al nodo anterior
-    this.conector = new HuesoFlotante(document.createElement("div"), "conectaNodos", this);
+    this.conector = new HuesoFlotante(
+      document.createElement("div"),
+      "conectaNodos",
+      this,
+    );
     this.conector.getTam();
     this.conector.desfasar(-this.conector.tamX / 2, -this.conector.tamY);
-  }
-  nuevoTexto(_tipo, _cartel, _padre) {
-    let contenedor = new Hueso(
-      createDiv(_tipo),
-      "objetivo noContainer" + _tipo,
-      _padre,
-    );
-    let texto = new HuesoTexto(
-      _cartel,
-      "objetivo textBox",
-      this.mainDiv,
-      false,
-    );
   }
 
   // ---------------------------------------------------------------CENTRAR

@@ -11,8 +11,6 @@ body {
 textarea {
   resize: none;
   overflow: hidden;
-}
-textarea:focus {
   position: relative;
   z-index: 90;
 }
@@ -24,12 +22,32 @@ textarea:focus {
 
 .huesoTexto {
   /* Evita que se coma los saltos de línea al editar texto */
+  /* y rompe las palabras demasiado largas */
   white-space: pre-wrap;
+  overflow-wrap: break-word
+}
+.huesoTexto_title {
+  font-weight: bolder;
+  font-size: smaller;
+}
+.huesoTexto .placeholder {
+  color: gray;
 }
 
 .textBox {
   background-color: rgba(255, 255, 255, 0.5);
 }
+.textBox:hover{
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.titleBox{
+  background-color: lightgrey;
+}
+.titleBox:hover{
+  background-color: rgb(240, 240, 240);
+}
+
 
 .noContainer {
   border: 2px solid hsl(0, 0%, 75%);
@@ -161,13 +179,6 @@ textarea:focus {
   align-items: flex-start;
 }
 
-.tagCol {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  align-items: center;
-}
-
 .perfil {
   width: 70px;
   height: 100px;
@@ -175,7 +186,8 @@ textarea:focus {
 
 .resumen,
 .eventoHead,
-.eventoInnerHead {
+.eventoInnerHead,
+.deseo * {
   width: 200px;
 }
 
@@ -202,6 +214,9 @@ textarea:focus {
 }
 .aporte_texto {
   width: 125px;
+}
+.aporte_texto,
+.deseo * {
   min-height: 50px;
 }
 
@@ -219,7 +234,7 @@ textarea:focus {
 .index {
   width: 25%;
 
-  background-color: lightgray;
+  /* background-color: lightgray; */
 }
 .tension {
   width: 50%;
@@ -232,9 +247,10 @@ textarea:focus {
   width: 100%;
   min-height: 24px;
 
-  background-color: lightgray;
+  /* background-color: lightgray; */
 
   text-align: center;
+  font-weight: bolder;
 }
 
 /* Nodos de personaje */

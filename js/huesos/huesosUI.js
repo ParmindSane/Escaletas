@@ -4,23 +4,39 @@ class HuesoTexto extends Hueso {
   constructor(_cartel, _clase, _padre, _startOpen) {
     super(document.createElement("div"), _clase + " huesoTexto", _padre);
 
-    this.dato = _cartel;
+    // Usa el "//" para separar el título del texto placeholder
+    let cartel = _cartel.split("// ");
+
+    // Guarda un elemento para el título, pero sólo lo usa si hace falta
+    this.eTitle = document.createElement("span");
+    this.eTitle.classList.add("huesoTexto_title");
+    if (cartel.length > 1) {
+      this.eTitle.textContent = cartel[0] + "\n";
+    }
+
+    // Muestra un texto de referencia hasta que el usuario escriba algo
+    this.placeholder = cartel[cartel.length - 1];
+
+    this.dato = "";
+    this.eDato = document.createElement("span");
+    this.eDato.className = "huesoTexto_data placeholder";
+    this.eDato.textContent = this.placeholder;
 
     // Objeto estático que no se puede editar
     this.eInherte = new Hueso(
-      document.createElement("div", this.dato),
-      "textBox_inherte",
+      document.createElement("div"),
+      "huesoTexto_inherte",
       this,
     );
-    this.eInherte.element.innerHTML = this.dato;
+    this.eInherte.element.append(this.eTitle, this.eDato);
 
     // Objeto de texto editable
     this.eEditable = new HuesoFlotante(
       document.createElement("textarea"),
-      "textBox_editable noContext",
+      "huesoTexto_editable noContext",
       this,
     );
-    this.eEditable.element.innerHTML = this.dato;
+    this.eEditable.element.placeholder = this.placeholder;
     this.eEditable.moverACaja(this.eInherte);
 
     // ¿Arranca editando o mostrando?
@@ -28,8 +44,6 @@ class HuesoTexto extends Hueso {
     if (!this.editando) {
       this.eEditable.element.classList.add("oculto");
     } else {
-      // this.eInherte.element.classList.add("oculto");
-
       // El textarea arranca abierto y con el texto seleccionado
       this.editar(true);
       this.eEditable.element.setSelectionRange(0, this.dato.length);
@@ -37,10 +51,11 @@ class HuesoTexto extends Hueso {
     this.getTam();
 
     // Se entra a editar con doble click
-    // y se sale usando el mouse fuera del objeto
+    // y se sale usando el mouse fuera del objeto, o aprentado Esc o ctrl+Enter
     this.element.addEventListener("dblclick", this.editar.bind(this));
     document.addEventListener("mousedown", this.mouseSensor.bind(this));
     document.addEventListener("wheel", this.dejarDeEditar.bind(this));
+    this.element.addEventListener("keydown", this.keySensor.bind(this));
 
     // Actualizar el tamaño de la caja a medida que se escribe
     this.eEditable.element.addEventListener("input", this.inputTam.bind(this));
@@ -58,10 +73,9 @@ class HuesoTexto extends Hueso {
     if (!this.editando || _b) {
       this.editando = true;
 
-      // Esconde el estático y deja el editable seleccionado a la vista
+      // Deja el editable visible y seleccionado
       // (acomoda el tamaño por si quedó muy grande de la vez anterior)
       this.eEditable.element.classList.remove("oculto");
-      // this.eEditable.element.size(this.tamX, this.tamY + 16);
       this.eEditable.element.style.width = this.tamX + "px";
       this.eEditable.element.style.height = this.tamY + 16 + "px";
       this.eEditable.element.focus();
@@ -69,8 +83,8 @@ class HuesoTexto extends Hueso {
       // Avisa que se empezó a editar
       this.element.dispatchEvent(
         new CustomEvent("inputAbierto", {
-          bubbles: true, // Allows the event to bubble up the DOM
-          cancelable: true, // Allows the event's default action to be prevented
+          bubbles: true,
+          cancelable: true,
         }),
       );
     }
@@ -81,15 +95,22 @@ class HuesoTexto extends Hueso {
     if (this.editando) {
       this.editando = false;
 
-      // Evita que el texto se quede seleccionado
-      this.eEditable.element.selectionEnd = 0;
-
-      // Actualizar dato y tamaño
+      // Actualiza el dato con lo que se escribió
       this.dato = this.eEditable.element.value;
-      this.eInherte.element.innerHTML = this.dato;
 
-      // Oculta el editable y muestra el estático
-      // this.eInherte.element.classList.remove("oculto");
+      // Si no hay nada escrito (vacío o puros espacios),
+      // ignora el input y muestra el texto placeholder
+      if (this.dato.trim().length > 0) {
+        this.eDato.textContent = this.dato;
+        this.eDato.classList.remove("placeholder");
+      } else {
+        this.eDato.textContent = this.placeholder;
+        this.eDato.classList.add("placeholder");
+        this.eEditable.element.value = "";
+      }
+
+      // Oculta el editable y evita que el texto quede seleccionado
+      this.eEditable.element.selectionEnd = 0;
       this.eEditable.element.classList.add("oculto");
 
       // Por si el nuevo texto cambió el tamaño de la caja
@@ -105,18 +126,30 @@ class HuesoTexto extends Hueso {
     }
   }
 
-  // ---------------------------------------------------------------DETECTAR EL MOUSE DURANTE LA EDICIÓN
+  // ---------------------------------------------------------------CERRAR EDICIÓN POR MOUSE
   mouseSensor(_e) {
-    // Si se usa el mouse fuera del objeto, sale del modo edición
+    // Cierra la edición al hacer click fuera del textarea
     if (this.editando) {
       if (!this.contieneTarget(_e)) {
-        this.dejarDeEditar();
+        this.dejarDeEditar(_e);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------CERRAR EDICIÓN POR TECLADO
+  keySensor(_e) {
+    // Cierra la edición al apretar Esc o ctrl+Enter
+    if (this.editando) {
+      let esEscape = _e.key === "Escape";
+      let esCtrlEnter = _e.ctrlKey && _e.key === "Enter";
+      if (esEscape || esCtrlEnter) {
+        this.dejarDeEditar(_e);
       }
     }
   }
 
   // ---------------------------------------------------------------ACTUALIZAR TAMAÑO AL ESCRIBIR
-  inputTam() {
+  inputTam(_e) {
     // Guardar el tamaño actual y habilitarlo para cambiar
     let py = parseInt(this.eEditable.element.style.height, 10);
     this.eEditable.element.style.height =
@@ -247,7 +280,7 @@ class HuesoSummonMenu extends HuesoFlotante {
       cy -= margin - dist;
     }
 
-    // Acomodar posición
+    // Ubicar en pantalla
     this.mover(cx, cy);
   }
 
